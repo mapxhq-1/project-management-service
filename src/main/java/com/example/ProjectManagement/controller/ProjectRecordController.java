@@ -1,7 +1,7 @@
 package com.example.ProjectManagement.controller;
 
-import com.example.ProjectManagement.dto.CreateProjectRequest;
-import com.example.ProjectManagement.dto.CreateProjectResponse;
+import com.example.ProjectManagement.model.Project;
+import com.example.ProjectManagement.model.StatusResponse;
 import com.example.ProjectManagement.service.ProjectRecordService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,18 +10,20 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/project-management-service")
 public class ProjectRecordController {
 
-    private final ProjectRecordService service;
+    private final ProjectRecordService projectRecordService;
 
-    public ProjectRecordController(ProjectRecordService service) {
-        this.service = service;
+    public ProjectRecordController(ProjectRecordService projectRecordService) {
+        this.projectRecordService = projectRecordService;
     }
 
     @PostMapping("/create-new-project")
-    public ResponseEntity<Object> createNewProject(@RequestBody CreateProjectRequest request) {
-        CreateProjectResponse response = service.createNewProject(request);
-        if ("failure".equals(response.getStatus())) {
+    public ResponseEntity<StatusResponse> createNewProject(@RequestBody Project project) {
+        StatusResponse response = projectRecordService.createNewProject(project);
+
+        if ("failure".equalsIgnoreCase(response.getStatus())) {
             return ResponseEntity.badRequest().body(response);
         }
+
         return ResponseEntity.ok(response);
     }
 }

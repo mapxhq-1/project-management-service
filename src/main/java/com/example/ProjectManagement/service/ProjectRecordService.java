@@ -1,8 +1,7 @@
 package com.example.ProjectManagement.service;
 
-import com.example.ProjectManagement.dto.CreateProjectRequest;
-import com.example.ProjectManagement.dto.CreateProjectResponse;
 import com.example.ProjectManagement.model.Project;
+import com.example.ProjectManagement.model.StatusResponse;
 import com.example.ProjectManagement.repository.ProjectRecordRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -19,16 +18,16 @@ public class ProjectRecordService {
         this.repository = repository;
     }
 
-    public CreateProjectResponse createNewProject(CreateProjectRequest request) {
+    public StatusResponse createNewProject(Project request) {
         // Validate
         if (!StringUtils.hasText(request.getOwnerEmail())) {
-            return new CreateProjectResponse("failure", "ownerEmail is required", null);
+            return new StatusResponse("failure", "ownerEmail is required", null);
         }
         if (!StringUtils.hasText(request.getProjectName())) {
-            return new CreateProjectResponse("failure", "projectName is required", null);
+            return new StatusResponse("failure", "projectName is required", null);
         }
 
-        // Normalize
+        // Normalize defaults
         if (request.getAccessorList() == null) {
             request.setAccessorList(Collections.emptyList());
         }
@@ -36,18 +35,16 @@ public class ProjectRecordService {
             request.setProjectConfig(new HashMap<>());
         }
 
-        // Build entity
-        Project project = Project.builder()
+        // Create and save project
+        Project saved = repository.save(Project.builder()
                 .ownerEmail(request.getOwnerEmail())
                 .accessorList(request.getAccessorList())
                 .projectName(request.getProjectName())
                 .projectConfig(request.getProjectConfig())
-                .build();
+                .build()
+        );
 
-        // Save to MongoDB
-        Project saved = repository.save(project);
-
-        // Return response
-        return new CreateProjectResponse("success", null, saved.getId());
+        // Return success response
+        return new StatusResponse("success", null, saved.getId());
     }
 }

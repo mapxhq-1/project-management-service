@@ -9,5 +9,5 @@ import lombok.Data;
 public class StatusResponse{
     private String status;
     private String message;
-    private  String file_id;
+    private  String fileId;
 }

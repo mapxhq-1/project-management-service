@@ -1,5 +1,6 @@
 package com.example.ProjectManagement.service;
 
+import com.example.ProjectManagement.dto.ProjectRequest;
 import com.example.ProjectManagement.model.Project;
 import com.example.ProjectManagement.model.StatusResponse;
 import com.example.ProjectManagement.repository.ProjectRecordRepository;
@@ -18,7 +19,7 @@ public class ProjectRecordService {
         this.repository = repository;
     }
 
-    public StatusResponse createNewProject(Project request) {
+    public StatusResponse createNewProject(ProjectRequest request) {
         // Validate
         if (!StringUtils.hasText(request.getOwnerEmail())) {
             return new StatusResponse("failure", "ownerEmail is required", null);

@@ -1,6 +1,6 @@
 package com.example.ProjectManagement.controller;
 
-import com.example.ProjectManagement.model.Project;
+import com.example.ProjectManagement.dto.ProjectRequest;
 import com.example.ProjectManagement.model.StatusResponse;
 import com.example.ProjectManagement.service.ProjectRecordService;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +17,7 @@ public class ProjectRecordController {
     }
 
     @PostMapping("/create-new-project")
-    public ResponseEntity<StatusResponse> createNewProject(@RequestBody Project project) {
+    public ResponseEntity<StatusResponse> createNewProject(@RequestBody ProjectRequest project) {
         StatusResponse response = projectRecordService.createNewProject(project);
 
         if ("failure".equalsIgnoreCase(response.getStatus())) {

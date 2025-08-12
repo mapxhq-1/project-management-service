@@ -1,4 +1,4 @@
-package com.example.ProjectManagement.model;
+package com.example.ProjectManagement.dto;
 
 
 import lombok.*;
@@ -6,8 +6,7 @@ import lombok.*;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class StatusResponse{
+public class Response{
     private String status;
     private String message;
-    private  String fileId;
 }

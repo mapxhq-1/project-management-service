@@ -33,4 +33,28 @@ public class Project {
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Document(collection = "notes_collection")
+    public static class Notes {
+
+        @Id
+        private String id;  // MongoDB ObjectId as String
+
+        private String projectId;
+        private String email;
+        private String noteTitle;
+        private HistoricalYear yearInTimeline;
+        private Double latitude;
+        private Double longitude;
+        private String htmlFileId;
+
+        @CreatedDate
+        private Instant createdAt;
+
+        @LastModifiedDate
+        private Instant updatedAt;
+    }
 }

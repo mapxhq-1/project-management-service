@@ -2,24 +2,34 @@ package com.example.ProjectManagement.service;
 
 import com.example.ProjectManagement.dto.ProjectRequest;
 import com.example.ProjectManagement.dto.ProjectUpdateRequest;
+import com.example.ProjectManagement.dto.GetResponse;
 import com.example.ProjectManagement.model.Project;
 import com.example.ProjectManagement.model.StatusResponse;
 import com.example.ProjectManagement.repository.ProjectRecordRepository;
+import org.bson.types.ObjectId;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 public class ProjectRecordService {
 
     private final ProjectRecordRepository repository;
+    private final MongoTemplate mongoTemplate;
+    private static final String COLLECTION_NAME = "project_records";
 
-    public ProjectRecordService(ProjectRecordRepository repository) {
+    public ProjectRecordService(ProjectRecordRepository repository,MongoTemplate mongoTemplate) {
         this.repository = repository;
+        this.mongoTemplate = mongoTemplate;
     }
 
     public StatusResponse createNewProject(ProjectRequest request) {
@@ -99,5 +109,57 @@ public class ProjectRecordService {
         Project saved = repository.save(project);
 
         return new StatusResponse("success", null, saved.getId());
+    }
+    // 1. Get All Projects Owned by a User
+    public ResponseEntity<GetResponse<List<Project>>> getAllProjectsOfOwner(String ownerEmail) {
+        if (!StringUtils.hasText(ownerEmail)) {
+            return ResponseEntity.badRequest().body(
+                    new GetResponse<>("failure", "ownerEmail is required", null)
+            );
+        }
+
+        Query query = new Query(Criteria.where("ownerEmail").is(ownerEmail));
+        List<Project> projects = mongoTemplate.find(query, Project.class, COLLECTION_NAME);
+
+        return ResponseEntity.ok(new GetResponse<>("success", null, projects));
+    }
+
+    // 2. Get All Projects Accessible by a User
+    public ResponseEntity<GetResponse<List<Project>>> getAllAccessibleProjects(String email) {
+        if (!StringUtils.hasText(email)) {
+            return ResponseEntity.badRequest().body(
+                    new GetResponse<>("failure", "email is required", null)
+            );
+        }
+
+        Query query = new Query(Criteria.where("accessorList").in(email));
+        List<Project> projects = mongoTemplate.find(query, Project.class, COLLECTION_NAME);
+
+        return ResponseEntity.ok(new GetResponse<>("success", null, projects));
+    }
+
+    // 3. Get Project by ID
+    public ResponseEntity<GetResponse<Project>> getProjectById(String projectId) {
+        if (!StringUtils.hasText(projectId)) {
+            return ResponseEntity.badRequest().body(
+                    new GetResponse<>("failure", "projectId is required", null)
+            );
+        }
+
+        try {
+            Project project = mongoTemplate.findById(new ObjectId(projectId), Project.class, COLLECTION_NAME);
+            if (project == null) {
+                return ResponseEntity.badRequest().body(
+                        new GetResponse<>("failure", "Project not found", null)
+                );
+            }
+
+            return ResponseEntity.ok(new GetResponse<>("success", null, project));
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(
+                    new GetResponse<>("failure", "Invalid projectId format", null)
+            );
+        }
     }
 }

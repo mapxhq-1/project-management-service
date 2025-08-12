@@ -19,14 +19,14 @@ public class NotesRecordController {
     private NotesRecordService notesRecordService;
 
     //GET request to get the notes details by id
-    @GetMapping("/get-note-by-id/{noteId}")
-    public ResponseEntity<StatusResponse> getNoteById(@PathVariable String noteId) {
-        StatusResponse response = notesRecordService.getNoteById(noteId);
-        if ("failure".equalsIgnoreCase(response.getStatus())) {
-            return ResponseEntity.badRequest().body(response);
-        }
-        return ResponseEntity.ok(response);
-    }
+//    @GetMapping("/get-note-by-id/{noteId}")
+//    public ResponseEntity<StatusResponse> getNoteById(@PathVariable String noteId) {
+//        StatusResponse response = notesRecordService.getNoteById(noteId);
+//        if ("failure".equalsIgnoreCase(response.getStatus())) {
+//            return ResponseEntity.badRequest().body(response);
+//        }
+//        return ResponseEntity.ok(response);
+//    }
 
 
     @PostMapping("/create-new-note")

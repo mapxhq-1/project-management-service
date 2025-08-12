@@ -1,6 +1,7 @@
 package com.example.ProjectManagement.service;
 
 import com.example.ProjectManagement.dto.CreateNoteRequest;
+import com.example.ProjectManagement.dto.UpdateNoteRequest;
 import com.example.ProjectManagement.model.Notes;
 import com.example.ProjectManagement.model.Project;
 import com.example.ProjectManagement.model.StatusResponse;
@@ -29,6 +30,16 @@ public class NotesRecordService {
 
     @Autowired
     private NotesRecordRepository notesRepository;
+
+
+    //GET Method to fetch the notes details by noteId
+
+
+
+
+
+
+
 
     public StatusResponse createNewNote(CreateNoteRequest request) {
 
@@ -88,6 +99,66 @@ public class NotesRecordService {
         }
     }
 
+    //logic for update the note
+    public StatusResponse updateNote(String noteId,String email,UpdateNoteRequest updateRequest){
+        // Validate noteId
+        if (noteId == null || noteId.isEmpty() || !ObjectId.isValid(noteId)) {
+            return new StatusResponse("failure", "Invalid or missing note ID", null);
+        }
+
+        // Validate email
+        if (email == null || email.isEmpty()) {
+            return new StatusResponse("failure", "Email is required", null);
+        }
+
+        // Validate htmlText
+        if (updateRequest.getHtmlText() == null || updateRequest.getHtmlText().trim().isEmpty()) {
+            return new StatusResponse("failure", "html text must not be null or empty", null);
+        }
+
+        // Fetch note
+        Notes note = notesRepository.findById(noteId).orElse(null);
+        if (note == null) {
+            return new StatusResponse("failure", "Note not found", null);
+        }
+
+        // Authorization check
+        if (!email.equalsIgnoreCase(note.getEmail())) {
+            return new StatusResponse("failure", "Unauthorized: email does not match note owner", null);
+        }
+
+        // Update HTML file
+        try {
+            String htmlFileId = note.getHtmlFileId();
+            File file = new File(HTML_NOTES_DIR + htmlFileId + ".html");
+            try (FileWriter writer = new FileWriter(file, false)) {
+                writer.write(updateRequest.getHtmlText());
+            }
+        } catch (Exception e) {
+            return new StatusResponse("failure", "Failed to update note content", null);
+        }
+
+        // Update MongoDB record
+        try {
+            note.setYearInTimeline(updateRequest.getYearInTimeline());
+            note.setUpdatedAt(Instant.now());
+            notesRepository.save(note);
+        } catch (Exception e) {
+            return new StatusResponse("failure", "Failed to update note record", null);
+        }
+
+        return new StatusResponse("success", null, noteId);
+
+    }
+
+
+
+
+
+
+
+
+    //logic for delete
     public Response deleteNoteById(String noteId, String email) {
         // Validate noteId
         if (noteId == null || noteId.isEmpty() || !ObjectId.isValid(noteId)) {

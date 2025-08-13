@@ -1,11 +1,10 @@
 package com.example.ProjectManagement.service;
 
-import com.example.ProjectManagement.dto.CreateNoteRequest;
-import com.example.ProjectManagement.dto.UpdateNoteRequest;
+import com.example.ProjectManagement.dto.*;
+import com.example.ProjectManagement.model.HistoricalYear;
 import com.example.ProjectManagement.model.Notes;
 import com.example.ProjectManagement.model.Project;
 import com.example.ProjectManagement.model.StatusResponse;
-import com.example.ProjectManagement.dto.Response;
 import com.example.ProjectManagement.repository.NotesRecordRepository;
 import com.example.ProjectManagement.repository.ProjectRecordRepository;
 import org.bson.types.ObjectId;
@@ -15,7 +14,9 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.nio.file.Files;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -33,9 +34,132 @@ public class NotesRecordService {
 
 
     //GET Method to fetch the notes details by noteId
+    public GetNoteResponse getNoteById(String noteId) {
+        // Validate ID
+        if (noteId == null || noteId.isEmpty() || !ObjectId.isValid(noteId)) {
+            return new GetNoteResponse("failure", "Invalid or missing note ID", null);
+        }
+
+        // Fetch from DB
+        Notes note = notesRepository.findById(noteId).orElse(null);
+        if (note == null) {
+            return new GetNoteResponse("failure", "Note not found", null);
+        }
+
+        // Read HTML content
+        String noteContent;
+        try {
+            File file = new File(HTML_NOTES_DIR+ note.getHtmlFileId() + ".html");
+            if (!file.exists()) {
+                return new GetNoteResponse("failure", "Failed to read note content from disk", null);
+            }
+            noteContent = Files.readString(file.toPath());
+        } catch (Exception e) {
+            return new GetNoteResponse("failure", "Failed to read note content from disk", null);
+        }
+
+        // Prepare DTO
+        NoteResponseDto dto = new NoteResponseDto(
+                note.getId(),
+                note.getProjectId(),
+                note.getLatitude(),
+                note.getLongitude(),
+                note.getCreatedAt(),
+                note.getUpdatedAt(),
+                noteContent
+        );
+
+        return new GetNoteResponse("success", null, dto);
+    }
+
+
+    //GET request Get Notes by Latitude, Longitude, year_in_timeline, and Project ID
+    public GetNoteResponse getNotesByLatLongYear(
+            String projectId,
+            double latitude,
+            double longitude,
+            HistoricalYear yearInTimeline
+    ) {
+        // Validate inputs
+        if (projectId == null || projectId.isEmpty()) {
+            return new GetNoteResponse("failure", "Invalid or missing projectId", null);
+        }
+        if (latitude < -90 || latitude > 90) {
+            return new GetNoteResponse("failure", "Invalid latitude value", null);
+        }
+        if (longitude < -180 || longitude > 180) {
+            return new GetNoteResponse("failure", "Invalid longitude value", null);
+        }
+        if (yearInTimeline == null ||
+                yearInTimeline.getEra() == null || yearInTimeline.getEra().isEmpty()) {
+            return new GetNoteResponse("failure", "Invalid or missing yearInTimeline", null);
+        }
+
+        // Fetch from DB
+        List<Notes> notes = notesRepository.findByProjectIdAndLatitudeAndLongitudeAndYearInTimeline(
+                projectId, latitude, longitude, yearInTimeline
+        );
+
+        if (notes.isEmpty()) {
+            return new GetNoteResponse("failure", "No notes found", null);
+        }
+
+        // Convert to DTO
+        List<GetNoteResponseDto> noteDtos = notes.stream()
+                .map(note -> new GetNoteResponseDto(
+                        note.getId(),
+                        note.getProjectId(),
+                        note.getLatitude(),
+                        note.getLongitude(),
+                        note.getYearInTimeline(),
+                        note.getHtmlFileId(),
+                        note.getCreatedAt(),
+                        note.getUpdatedAt()
+                ))
+                .toList();
+
+        return new GetNoteResponse("success", null, noteDtos);
+    }
 
 
 
+    //Get All Notes by Project ID and year
+    public GetNoteResponse getAllNotesByProjectIdAndYear(
+            String projectId,
+            HistoricalYear yearInTimeline
+    ) {
+        if (projectId == null || projectId.isEmpty()) {
+            return new GetNoteResponse("failure", "Invalid or missing projectId", null);
+        }
+        if (yearInTimeline == null ||
+                yearInTimeline.getEra() == null || yearInTimeline.getEra().isEmpty()) {
+            return new GetNoteResponse("failure", "Invalid or missing yearInTimeline", null);
+        }
+        // Fetch from DB
+        List<Notes> notes = notesRepository.findByProjectIdAndYearInTimeline(
+                projectId,yearInTimeline
+        );
+
+        if (notes.isEmpty()) {
+            return new GetNoteResponse("failure", "No notes found", null);
+        }
+
+        // Convert to DTO
+        List<GetNoteResponseDto> noteDtos = notes.stream()
+                .map(note -> new GetNoteResponseDto(
+                        note.getId(),
+                        note.getProjectId(),
+                        note.getLatitude(),
+                        note.getLongitude(),
+                        note.getYearInTimeline(),
+                        note.getHtmlFileId(),
+                        note.getCreatedAt(),
+                        note.getUpdatedAt()
+                ))
+                .toList();
+
+        return new GetNoteResponse("success", null, noteDtos);
+    }
 
 
 

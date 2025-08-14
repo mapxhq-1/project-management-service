@@ -1,11 +1,12 @@
 package com.example.ProjectManagement.controller;
 
-import com.example.ProjectManagement.dto.ProjectRequest;
-import com.example.ProjectManagement.dto.ProjectUpdateRequest;
+import com.example.ProjectManagement.dto.projectDto.DeleteProjectResponse;
+import com.example.ProjectManagement.dto.projectDto.GetResponse;
+import com.example.ProjectManagement.dto.projectDto.ProjectRequest;
+import com.example.ProjectManagement.dto.projectDto.ProjectUpdateRequest;
+import com.example.ProjectManagement.dto.projectDto.StatusResponse;
 import com.example.ProjectManagement.model.Project;
-import com.example.ProjectManagement.model.StatusResponse;
 import com.example.ProjectManagement.service.ProjectRecordService;
-import com.example.ProjectManagement.dto.GetResponse;
 
 import java.util.List;
 
@@ -74,5 +75,21 @@ public class ProjectRecordController {
     public ResponseEntity<GetResponse<Project>> getProjectById(
             @PathVariable String projectId) {
         return projectRecordService.getProjectById(projectId);
+    }
+    @DeleteMapping("/delete-project/{projectId}")
+    public ResponseEntity<DeleteProjectResponse> deleteProject(
+            @PathVariable("projectId") String projectId,
+            @RequestParam("ownerEmail") String ownerEmail) {
+
+        DeleteProjectResponse response = projectRecordService.deleteProject(projectId, ownerEmail);
+
+        if ("success".equals(response.getStatus())) {
+            return ResponseEntity.ok(response);
+        }else if ("Unauthorized: email is not the owner of the project".equals(response.getMessage())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        } 
+        else {
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 }

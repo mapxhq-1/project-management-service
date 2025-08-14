@@ -1,10 +1,14 @@
 package com.example.ProjectManagement.service;
 
-import com.example.ProjectManagement.dto.ProjectRequest;
-import com.example.ProjectManagement.dto.ProjectUpdateRequest;
-import com.example.ProjectManagement.dto.GetResponse;
+import com.example.ProjectManagement.dto.projectDto.DeleteProjectResponse;
+import com.example.ProjectManagement.dto.projectDto.GetResponse;
+import com.example.ProjectManagement.dto.projectDto.ProjectRequest;
+import com.example.ProjectManagement.dto.projectDto.ProjectUpdateRequest;
+import com.example.ProjectManagement.dto.projectDto.StatusResponse;
+import com.example.ProjectManagement.model.Notes;
 import com.example.ProjectManagement.model.Project;
-import com.example.ProjectManagement.model.StatusResponse;
+import com.example.ProjectManagement.repository.ImagesRecordRepository;
+import com.example.ProjectManagement.repository.NotesRecordRepository;
 import com.example.ProjectManagement.repository.ProjectRecordRepository;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -14,6 +18,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,11 +31,18 @@ public class ProjectRecordService {
 
     private final ProjectRecordRepository repository;
     private final MongoTemplate mongoTemplate;
-    private static final String COLLECTION_NAME = "project_records";
+    private final NotesRecordRepository notesRecordRepository;
+    //private final ImagesRecordRepository imagesRecordRepository;
 
-    public ProjectRecordService(ProjectRecordRepository repository,MongoTemplate mongoTemplate) {
+    private static final String COLLECTION_NAME = "project_records";
+    private final String notesBasePath = "src/main/resources/html_notes/";
+    //private final String imagesBasePath = "/path/to/images/files/";
+
+    public ProjectRecordService(ProjectRecordRepository repository,NotesRecordRepository notesRecordRepository,ImagesRecordRepository imagesRecordRepository,MongoTemplate mongoTemplate) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
+        this.notesRecordRepository = notesRecordRepository;
+        //this.imagesRecordRepository = imagesRecordRepository;
     }
 
     public StatusResponse createNewProject(ProjectRequest request) {
@@ -62,25 +75,29 @@ public class ProjectRecordService {
         return new StatusResponse("success", null, saved.getId());
     }
     public StatusResponse updateProject(ProjectUpdateRequest request) {
-        // Validate required fields
-        if (!StringUtils.hasText(request.getFileId())) {
-            return new StatusResponse("failure", "fileId is missing", null);
+    // Validate required fields
+        if (!StringUtils.hasText(request.getProjectId())) {
+            return new StatusResponse("failure", "projectId is missing", null);
         }
         if (!StringUtils.hasText(request.getOwnerEmail())) {
             return new StatusResponse("failure", "ownerEmail is required", null);
         }
 
-        // Check if at least one updatable field is provided
-        if (request.getProjectName() == null &&
-            request.getAccessorList() == null &&
-            request.getProjectConfig() == null) {
-            return new StatusResponse("failure", 
-                "At least one updatable field (projectName, accessorList, or projectConfig) must be provided", 
-                null);
+        // Check if at least one *valid* updatable field is provided
+        boolean hasProjectName = StringUtils.hasText(request.getProjectName());
+        boolean hasAccessorList = request.getAccessorList() != null;
+        boolean hasProjectConfig = request.getProjectConfig() != null;
+
+        if (!hasProjectName && !hasAccessorList && !hasProjectConfig) {
+            return new StatusResponse(
+                "failure",
+                "At least one updatable field (projectName, accessorList, or projectConfig) must be provided",
+                null
+            );
         }
 
         // Fetch the project from DB
-        Optional<Project> optionalProject = repository.findById(request.getFileId());
+        Optional<Project> optionalProject = repository.findById(request.getProjectId());
         if (optionalProject.isEmpty()) {
             return new StatusResponse("failure", "Project not found", null);
         }
@@ -92,15 +109,15 @@ public class ProjectRecordService {
             return new StatusResponse("failure", "Unauthorized: owner email does not match project owner", null);
         }
 
-        // Apply updates
-        if (request.getProjectName() != null) {
-            project.setProjectName(request.getProjectName());
+        // Apply updates only if non-empty
+        if (hasProjectName) {
+            project.setProjectName(request.getProjectName().trim());
         }
-        if (request.getAccessorList() != null) {
+        if (hasAccessorList) {
             project.setAccessorList(request.getAccessorList());
         }
-        if (request.getProjectConfig() != null) {
-            project.setProjectConfig(request.getProjectConfig()); // Replace whole object
+        if (hasProjectConfig) {
+            project.setProjectConfig(request.getProjectConfig());
         }
 
         project.setUpdatedAt(Instant.now());
@@ -110,6 +127,7 @@ public class ProjectRecordService {
 
         return new StatusResponse("success", null, saved.getId());
     }
+
     // 1. Get All Projects Owned by a User
     public ResponseEntity<GetResponse<List<Project>>> getAllProjectsOfOwner(String ownerEmail) {
         if (!StringUtils.hasText(ownerEmail)) {
@@ -161,5 +179,50 @@ public class ProjectRecordService {
                     new GetResponse<>("failure", "Invalid projectId format", null)
             );
         }
+    }
+    public DeleteProjectResponse deleteProject(String projectId, String ownerEmail) {
+
+        // 1. Validate projectId format
+        if (!ObjectId.isValid(projectId)) {
+            return DeleteProjectResponse.failure("Invalid or missing project_id");
+        }
+
+        // 2. Find project using String ID (no new ObjectId())
+        Optional<Project> projectOpt = repository.findById(projectId);
+        if (projectOpt.isEmpty()) {
+            return DeleteProjectResponse.failure("Project not found");
+        }
+
+        Project project = projectOpt.get();
+
+        // 3. Verify ownership
+        if (!project.getOwnerEmail().equalsIgnoreCase(ownerEmail)) {
+            return DeleteProjectResponse.failure("Unauthorized: email is not the owner of the project");
+        }
+        
+        // 4. Delete associated notes
+        notesRecordRepository.findByProjectId(projectId).forEach(note -> {
+            try {
+                Files.deleteIfExists(Paths.get(notesBasePath, note.getHtmlFileId() + ".html"));
+                notesRecordRepository.delete(note);
+            } catch (Exception ignored) {}
+        });
+
+        // 5. Delete associated images
+        // imagesRecordRepository.findByProjectId(projectId).forEach(img -> {
+        //     try {
+        //         Files.deleteIfExists(Paths.get(imagesBasePath, img.getImageFileId() + "." + img.getFormat()));
+        //         imagesRecordRepository.delete(img);
+        //     } catch (Exception ignored) {}
+        // });
+
+        // 6. Delete the project
+        try {
+            repository.delete(project);
+        } catch (Exception e) {
+            return DeleteProjectResponse.failure("Failed to delete project record");
+        }
+
+        return DeleteProjectResponse.success();
     }
 }

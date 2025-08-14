@@ -1,4 +1,4 @@
-package com.example.ProjectManagement.dto;
+package com.example.ProjectManagement.dto.projectDto;
 
 import lombok.Data;
 import java.util.List;

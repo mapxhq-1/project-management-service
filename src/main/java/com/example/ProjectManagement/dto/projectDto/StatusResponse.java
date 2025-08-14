@@ -1,4 +1,4 @@
-package com.example.ProjectManagement.model;
+package com.example.ProjectManagement.dto.projectDto;
 
 
 import lombok.AllArgsConstructor;
@@ -9,5 +9,5 @@ import lombok.Data;
 public class StatusResponse{
     private String status;
     private String message;
-    private  String fileId;
+    private  String ProjectId;
 }

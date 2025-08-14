@@ -5,7 +5,7 @@ import com.example.ProjectManagement.dto.projectDto.GetResponse;
 import com.example.ProjectManagement.dto.projectDto.ProjectRequest;
 import com.example.ProjectManagement.dto.projectDto.ProjectUpdateRequest;
 import com.example.ProjectManagement.dto.projectDto.StatusResponse;
-import com.example.ProjectManagement.model.Notes;
+//import com.example.ProjectManagement.model.Notes;
 import com.example.ProjectManagement.model.Project;
 import com.example.ProjectManagement.repository.ImagesRecordRepository;
 import com.example.ProjectManagement.repository.NotesRecordRepository;

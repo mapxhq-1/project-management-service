@@ -1,4 +1,4 @@
-package com.example.ProjectManagement.dto;
+package com.example.ProjectManagement.dto.NotesDto;
 
 import com.example.ProjectManagement.model.HistoricalYear;
 import lombok.Data;

@@ -1,4 +1,4 @@
-package com.example.ProjectManagement.dto;
+package com.example.ProjectManagement.dto.NotesDto;
 
 
 import lombok.*;

@@ -1,10 +1,10 @@
 package com.example.ProjectManagement.service;
 
-import com.example.ProjectManagement.dto.*;
+import com.example.ProjectManagement.dto.NotesDto.*;
 import com.example.ProjectManagement.model.HistoricalYear;
 import com.example.ProjectManagement.model.Notes;
 import com.example.ProjectManagement.model.Project;
-import com.example.ProjectManagement.model.StatusResponse;
+import com.example.ProjectManagement.dto.NotesDto.NotesResponse;
 import com.example.ProjectManagement.repository.NotesRecordRepository;
 import com.example.ProjectManagement.repository.ProjectRecordRepository;
 import org.bson.types.ObjectId;
@@ -31,6 +31,20 @@ public class NotesRecordService {
 
     @Autowired
     private NotesRecordRepository notesRepository;
+
+
+    //To check the era
+    public boolean checkEra(String  era){
+        // ✅ Using switch for era check
+        switch (era) {
+            case "BCE": return true;
+            case "CE":return true;
+                // valid, do nothing
+            default:
+                break;
+        }
+        return false;
+    }
 
 
     //GET Method to fetch the notes details by noteId
@@ -94,6 +108,9 @@ public class NotesRecordService {
                 yearInTimeline.getEra() == null || yearInTimeline.getEra().isEmpty()) {
             return new GetNoteResponse("failure", "Invalid or missing yearInTimeline", null);
         }
+        if(!checkEra(yearInTimeline.getEra())){
+            return new GetNoteResponse("failure", "Give the correct era BCE or CE", null);
+        }
 
         // Fetch from DB
         List<Notes> notes = notesRepository.findByProjectIdAndLatitudeAndLongitudeAndYearInTimeline(
@@ -135,6 +152,9 @@ public class NotesRecordService {
                 yearInTimeline.getEra() == null || yearInTimeline.getEra().isEmpty()) {
             return new GetNoteResponse("failure", "Invalid or missing yearInTimeline", null);
         }
+        if(!checkEra(yearInTimeline.getEra())){
+            return new GetNoteResponse("failure", "Give the correct era BCE or CE", null);
+        }
         // Fetch from DB
         List<Notes> notes = notesRepository.findByProjectIdAndYearInTimeline(
                 projectId,yearInTimeline
@@ -161,33 +181,29 @@ public class NotesRecordService {
         return new GetNoteResponse("success", null, noteDtos);
     }
 
-
-
-
-
-    public StatusResponse createNewNote(CreateNoteRequest request) {
+    public NotesResponse createNewNote(CreateNoteRequest request) {
 
         // Validate required fields
         if (request.getProjectId() == null || request.getProjectId().trim().isEmpty()) {
-            return new StatusResponse("failure", "Project ID is required", null);
+            return new NotesResponse("failure", "Project ID is required", null);
         }
         if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
-            return new StatusResponse("failure", "Email is required", null);
+            return new NotesResponse("failure", "Email is required", null);
         }
         if (request.getHtmlText() == null || request.getHtmlText().trim().isEmpty()) {
-            return new StatusResponse("failure", "HTML content is required", null);
+            return new NotesResponse("failure", "HTML content is required", null);
         }
         if (request.getLatitude() < -90 || request.getLatitude() > 90) {
-            return new StatusResponse("failure", "Invalid latitude", null);
+            return new NotesResponse("failure", "Invalid latitude", null);
         }
         if (request.getLongitude() < -180 || request.getLongitude() > 180) {
-            return new StatusResponse("failure", "Invalid longitude", null);
+            return new NotesResponse("failure", "Invalid longitude", null);
         }
 
         // Check if project exists
         Optional<Project> project = projectRepository.findById(request.getProjectId());
         if (project.isEmpty()) {
-            return new StatusResponse("failure", "Project not found", null);
+            return new NotesResponse("failure", "Project not found", null);
         }
 
         try {
@@ -216,39 +232,39 @@ public class NotesRecordService {
 
             Notes savedNote = notesRepository.save(note);
 
-            return new StatusResponse("success", null, savedNote.getId());
+            return new NotesResponse("success", null, savedNote.getId());
 
         } catch (Exception e) {
-            return new StatusResponse("failure", "Error while creating note: " + e.getMessage(), null);
+            return new NotesResponse("failure", "Error while creating note: " + e.getMessage(), null);
         }
     }
 
     //logic for update the note
-    public StatusResponse updateNote(String noteId,String email,UpdateNoteRequest updateRequest){
+    public NotesResponse updateNote(String noteId,String email,UpdateNoteRequest updateRequest){
         // Validate noteId
         if (noteId == null || noteId.isEmpty() || !ObjectId.isValid(noteId)) {
-            return new StatusResponse("failure", "Invalid or missing note ID", null);
+            return new NotesResponse("failure", "Invalid or missing note ID", null);
         }
 
         // Validate email
         if (email == null || email.isEmpty()) {
-            return new StatusResponse("failure", "Email is required", null);
+            return new NotesResponse("failure", "Email is required", null);
         }
 
         // Validate htmlText
         if (updateRequest.getHtmlText() == null || updateRequest.getHtmlText().trim().isEmpty()) {
-            return new StatusResponse("failure", "html text must not be null or empty", null);
+            return new NotesResponse("failure", "html text must not be null or empty", null);
         }
 
         // Fetch note
         Notes note = notesRepository.findById(noteId).orElse(null);
         if (note == null) {
-            return new StatusResponse("failure", "Note not found", null);
+            return new NotesResponse("failure", "Note not found", null);
         }
 
         // Authorization check
         if (!email.equalsIgnoreCase(note.getEmail())) {
-            return new StatusResponse("failure", "Unauthorized: email does not match note owner", null);
+            return new NotesResponse("failure", "Unauthorized: email does not match note owner", null);
         }
 
         // Update HTML file
@@ -259,7 +275,7 @@ public class NotesRecordService {
                 writer.write(updateRequest.getHtmlText());
             }
         } catch (Exception e) {
-            return new StatusResponse("failure", "Failed to update note content", null);
+            return new NotesResponse("failure", "Failed to update note content", null);
         }
 
         // Update MongoDB record
@@ -268,17 +284,12 @@ public class NotesRecordService {
             note.setUpdatedAt(Instant.now());
             notesRepository.save(note);
         } catch (Exception e) {
-            return new StatusResponse("failure", "Failed to update note record", null);
+            return new NotesResponse("failure", "Failed to update note record", null);
         }
 
-        return new StatusResponse("success", null, noteId);
+        return new NotesResponse("success", null, noteId);
 
     }
-
-
-
-
-
 
 
 

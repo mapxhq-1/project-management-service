@@ -1,12 +1,12 @@
 package com.example.ProjectManagement.controller;
 
 
-import com.example.ProjectManagement.dto.CreateNoteRequest;
-import com.example.ProjectManagement.dto.GetNoteResponse;
-import com.example.ProjectManagement.dto.Response;
-import com.example.ProjectManagement.dto.UpdateNoteRequest;
+import com.example.ProjectManagement.dto.NotesDto.CreateNoteRequest;
+import com.example.ProjectManagement.dto.NotesDto.GetNoteResponse;
+import com.example.ProjectManagement.dto.NotesDto.Response;
+import com.example.ProjectManagement.dto.NotesDto.UpdateNoteRequest;
 import com.example.ProjectManagement.model.HistoricalYear;
-import com.example.ProjectManagement.model.StatusResponse;
+import com.example.ProjectManagement.dto.NotesDto.NotesResponse;
 import com.example.ProjectManagement.service.NotesRecordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,11 +44,11 @@ public class NotesRecordController {
     }
 
     //Get All Notes by Project ID and year
-    @GetMapping("/get-all-note-by-project-id-and-year/{projectId}/{year}/{era}")
+    @GetMapping("/get-all-note-by-project-id-and-year/{projectId}")
     public GetNoteResponse getAllNotesByProjectAndYear(
             @PathVariable String projectId,
-            @PathVariable long year,
-            @PathVariable String era
+            @RequestParam long year,
+            @RequestParam String era
     ) {
         HistoricalYear yearInTimeline = new HistoricalYear(year, era);
         return notesRecordService.getAllNotesByProjectIdAndYear(projectId, yearInTimeline);
@@ -58,8 +58,8 @@ public class NotesRecordController {
     //To create a new notes
 
     @PostMapping("/create-new-note")
-    public ResponseEntity<StatusResponse> createNewNote(@RequestBody CreateNoteRequest request) {
-        StatusResponse response = notesRecordService.createNewNote(request);
+    public ResponseEntity<NotesResponse> createNewNote(@RequestBody CreateNoteRequest request) {
+        NotesResponse response = notesRecordService.createNewNote(request);
         if ("failure".equalsIgnoreCase(response.getStatus())) {
             return ResponseEntity.badRequest().body(response);
         }
@@ -68,11 +68,11 @@ public class NotesRecordController {
 
     //update API request
     @PatchMapping("/update-note/{noteId}")
-    public ResponseEntity<StatusResponse> updateNote(
+    public ResponseEntity<NotesResponse> updateNote(
             @PathVariable String noteId,
             @RequestParam String email,
             @RequestBody UpdateNoteRequest request){
-          StatusResponse response=notesRecordService.updateNote(noteId,email,request);
+          NotesResponse response=notesRecordService.updateNote(noteId,email,request);
         if ("failure".equalsIgnoreCase(response.getStatus())) {
             return ResponseEntity.badRequest().body(response);
         }

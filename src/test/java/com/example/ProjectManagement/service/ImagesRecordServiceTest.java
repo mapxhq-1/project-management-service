@@ -181,11 +181,27 @@ class ImagesRecordServiceTest {
         String pid = new org.bson.types.ObjectId().toHexString();
         when(projectRepository.findById(pid)).thenReturn(Optional.of(new Project()));
         MockMultipartFile file = new MockMultipartFile("f", "a.png", "image/png", "x".getBytes());
-        when(imagesRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        final Images[] savedImage = new Images[1];
+        when(imagesRepository.save(any())).thenAnswer(inv -> {
+            savedImage[0] = inv.getArgument(0);
+            return savedImage[0];
+        });
 
         ImageUploadResponse res = service.uploadImage(pid, "a@b.com", "12", "45", file, "cap", "2024", "CE");
         assertEquals("success", res.getStatus());
+
+        // ✅ Delete the actual file created
+        if (savedImage[0] != null && savedImage[0].getImageFileId()!= null) {
+            String UPLOAD_DIR = System.getProperty("user.dir") + "/src/main/resources/image_content/";
+            File createdFile = new File(UPLOAD_DIR + savedImage[0].getImageFileId()+".png");
+            if (createdFile.exists()) {
+                createdFile.delete();
+            }
+        }
     }
+
+
 
     // ---------------- updateImage ----------------
     @Test

@@ -5,10 +5,10 @@ import com.example.ProjectManagement.dto.ImagesDto.ImageGetArrayResponse;
 import com.example.ProjectManagement.dto.ImagesDto.ImageGetResponse;
 import com.example.ProjectManagement.dto.ImagesDto.ImageUploadResponse;
 import com.example.ProjectManagement.dto.NotesDto.Response;
+import com.example.ProjectManagement.model.HistoricalYear;
 import com.example.ProjectManagement.service.ImagesRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,8 +26,12 @@ public class ImagesRecordController {
 
      //GET API API 1: Get Image by ID
     @GetMapping("/get-image-by-id/{imageId}")
-    public ImageGetResponse getById(@PathVariable String imageId){
-        return imageService.getById(imageId);
+    public ResponseEntity<ImageGetResponse> getById(@PathVariable String imageId){
+        ImageGetResponse response=imageService.getById(imageId);
+        if(response.getStatus().equalsIgnoreCase("failure")){
+            return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+        return ResponseEntity.ok(response);
     }
 
     //GET API 2:Get All Images by Latitude and Longitude
@@ -39,10 +43,37 @@ public class ImagesRecordController {
     )
     {
         ImageGetArrayResponse response = imageService.getImageByLatLong(projectId, latitude, longitude);
+        if(response.getStatus().equalsIgnoreCase("failure")){
+            return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
         return ResponseEntity.ok(response);
     }
 
-    //GET API 3:Get All Images by Project ID
+
+    //GET API 3:Get All Images by Latitude and Longitude and projectID and yearInTimeline
+    @GetMapping("/get-all-image-by-projectId-lat-long-year-era")
+    public ResponseEntity<ImageGetArrayResponse> getImageByProjectIdLatLongAndYearInTimeline(
+            @RequestParam("projectId") String  projectId,
+            @RequestParam("latitude") double  latitude,
+            @RequestParam("longitude") double longitude,
+            @RequestParam("year") long year,
+            @RequestParam("era")  String era
+    )
+    {
+        HistoricalYear yearInTimeline=new HistoricalYear(year,era);
+        ImageGetArrayResponse response = imageService.getImageByProjectIdLatLongAndYearInTimeline(projectId, latitude, longitude,yearInTimeline);
+        if(response.getStatus().equalsIgnoreCase("failure")){
+            return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+        return ResponseEntity.ok(response);
+    }
+
+
+
+
+
+
+    //GET API 4:Get All Images by Project ID
     @GetMapping("/get-all-image-by-project-id")
     public ResponseEntity<ImageGetArrayResponse> getImageByProjectId(
             @RequestParam String projectId
@@ -55,7 +86,24 @@ public class ImagesRecordController {
         return ResponseEntity.ok(response); //returns 200 ok request
     }
 
-     //GET API 4:etch Image Content by File Name
+
+    //Get API 5:Get All Images By project Id and year and era
+    @GetMapping("/get-all-images-by-project-id-year-in-timeline")
+    public  ResponseEntity<ImageGetArrayResponse>  getImageByProjectIdYearInTimeline(
+            @RequestParam String  projectId,
+            @RequestParam  long year,
+            @RequestParam String era
+    ){
+        HistoricalYear yearInTimeline = new HistoricalYear(year, era);
+        ImageGetArrayResponse response=imageService.getImageByProjectIdYearInTimeline(projectId,yearInTimeline);
+        if(response.getStatus().equalsIgnoreCase("failure")){
+             return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+        return ResponseEntity.ok(response);
+    }
+
+
+     //GET API 6:fetch Image Content by File Name
     @GetMapping("/fetch-image-content/{fileName}")
     public ResponseEntity<byte[]> getImageByFileName(
             @PathVariable("fileName") String fileName

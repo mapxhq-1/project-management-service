@@ -10,6 +10,7 @@ import com.example.ProjectManagement.dto.NotesDto.NotesResponse;
 import com.example.ProjectManagement.service.NotesRecordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -85,6 +86,9 @@ public class NotesRecordController {
             @PathVariable String noteId,
             @RequestParam String email){
         Response response = notesRecordService.deleteNoteById(noteId, email);
+        if(response.getStatus().equalsIgnoreCase("failure")){
+            return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
         return ResponseEntity.ok(response);
     }
 

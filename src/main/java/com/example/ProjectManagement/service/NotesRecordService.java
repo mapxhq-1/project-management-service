@@ -37,9 +37,8 @@ public class NotesRecordService {
     public boolean checkEra(String  era){
         // ✅ Using switch for era check
         switch (era) {
-            case "BCE": return true;
-            case "CE":return true;
-                // valid, do nothing
+            case "BCE", "CE": return true;
+            // valid, do nothing
             default:
                 break;
         }
@@ -180,6 +179,9 @@ public class NotesRecordService {
 
         return new GetNoteResponse("success", null, noteDtos);
     }
+
+
+     //create a note service
 
     public NotesResponse createNewNote(CreateNoteRequest request) {
 

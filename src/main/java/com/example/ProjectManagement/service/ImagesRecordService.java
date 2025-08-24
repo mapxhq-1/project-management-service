@@ -54,7 +54,7 @@ public class ImagesRecordService {
         return false;
     }
 
-    //GET API API 1: Get Image by ID
+    //GET  API 1: Get Image by ID
     public ImageGetResponse getById(String imageId){
           if(imageId==null || imageId.isEmpty()|| !ObjectId.isValid(imageId)){
               return new ImageGetResponse("failure", "Missing or invalid imageId", null);
@@ -86,9 +86,43 @@ public class ImagesRecordService {
         return new ImageGetArrayResponse("success",null,image);
     }
 
+    //GET API 3:Get All Images by Latitude and Longitude and projectID and yearInTimeline
+    public ImageGetArrayResponse getImageByProjectIdLatLongAndYearInTimeline(String projectId,double latitude,double longitude,HistoricalYear yearInTimeline){
+        if (projectId == null || projectId.isEmpty() || !ObjectId.isValid(projectId)) {
+            return new ImageGetArrayResponse("failure", "Missing or invalid projectId", null);
+        }
+        if (latitude < -90 || latitude > 90) {
+            return new ImageGetArrayResponse("failure", "Invalid latitude", null);
+        }
+        if (longitude < -180 || longitude > 180) {
+            return new ImageGetArrayResponse("failure", "Invalid longitude", null);
+        }
+        if (yearInTimeline == null ||
+                yearInTimeline.getEra() == null || yearInTimeline.getEra().isEmpty()) {
+            return new ImageGetArrayResponse("failure", "Invalid or missing yearInTimeline", null);
+        }
+        if(!checkEra(yearInTimeline.getEra())){
+            return new ImageGetArrayResponse("failure", "Give the correct era BCE or CE", null);
+        }
+        List<Images> image=imagesRepository.findByProjectIdAndLatitudeAndLongitudeAndYearInTimeline(projectId,latitude,longitude,yearInTimeline);
+        if (image.isEmpty()) {
+            return new ImageGetArrayResponse("failure", "No images found", null);
+        }
+        return new ImageGetArrayResponse("success",null,image);
+    }
 
 
-    // GET API 3:Get All Images by Project ID
+
+
+
+
+
+
+
+
+
+
+    // GET API 4:Get All Images by Project ID
     public ImageGetArrayResponse getImagesByProjectId(String projectId)
     {
         if(projectId==null || projectId.isEmpty() ||!ObjectId.isValid(projectId)){
@@ -105,7 +139,33 @@ public class ImagesRecordService {
         return new ImageGetArrayResponse("success",null,image);
     }
 
-    //GET API 4: Fetch Image Content by File Name
+    //Get API 5:Get All Images By project Id and year and era
+    public ImageGetArrayResponse getImageByProjectIdYearInTimeline(String projectId,HistoricalYear yearInTimeline)
+    {
+        if(projectId==null || projectId.isEmpty() ||!ObjectId.isValid(projectId)){
+            return new ImageGetArrayResponse("failure","Invalid or missing projectId",null);
+        }
+        if (yearInTimeline == null ||
+                yearInTimeline.getEra() == null || yearInTimeline.getEra().isEmpty()) {
+            return new ImageGetArrayResponse("failure", "Invalid or missing yearInTimeline", null);
+        }
+        if(!checkEra(yearInTimeline.getEra())){
+            return new ImageGetArrayResponse("failure", "Give the correct era BCE or CE", null);
+        }
+        Optional<Project> project=projectRepository.findById(projectId);
+        if(project.isEmpty()){
+            return new ImageGetArrayResponse("failure", "Project not found", null);
+        }
+
+        List<Images> image=imagesRepository.findByProjectIdAndYearInTimeline(projectId,yearInTimeline);
+        if(image.isEmpty()){
+            return new ImageGetArrayResponse("failure", "No image found",null);
+        }
+        return new ImageGetArrayResponse("success",null,image);
+    }
+
+
+    //GET API 6: Fetch Image Content by File Name
    public ResponseEntity<byte []> getImageByFileName(String fileName) throws IOException {
         File file=new File(UPLOAD_DIR+fileName);
        // Check if file exists

@@ -1,13 +1,8 @@
 package com.example.ProjectManagement.controller;
 
 
-import com.example.ProjectManagement.dto.HyperlinkDto.CreateHyperlinkRequest;
-import com.example.ProjectManagement.dto.HyperlinkDto.HyperlinksResponse;
-import com.example.ProjectManagement.dto.HyperlinkDto.NormalResponse;
-import com.example.ProjectManagement.dto.HyperlinkDto.UpdateHyperlinkRequest;
-import com.example.ProjectManagement.dto.NotesDto.NotesResponse;
-import com.example.ProjectManagement.dto.NotesDto.Response;
-import com.example.ProjectManagement.dto.NotesDto.UpdateNoteRequest;
+import com.example.ProjectManagement.dto.HyperlinkDto.*;
+import com.example.ProjectManagement.model.HistoricalYear;
 import com.example.ProjectManagement.service.HyperlinkRecordService;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +21,38 @@ public class HyperlinkRecordController {
     @Autowired
     private  HyperlinkRecordService hyperlinkRecordService;
 
+    //GET request Get Hyperlinks by Latitude, Longitude, year_in_timeline, and Project ID
+    @GetMapping("/get-hyperlink-by-lat-long-year")
+    public ResponseEntity<GetHyperlinkResponse> getHyperlinksByLatLongYear(
+            @RequestParam String projectId,
+            @RequestParam double latitude,
+            @RequestParam double longitude,
+            @RequestParam long year,
+            @RequestParam String era
+    ) {
+        HistoricalYear yearInTimeline = new HistoricalYear(year, era);
+        GetHyperlinkResponse response= hyperlinkRecordService.getHyperlinksByLatLongYear(projectId, latitude, longitude, yearInTimeline);
+        if(response.getStatus().equalsIgnoreCase("failure")){
+             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+        return ResponseEntity.ok(response);
+    }
 
+
+    //Get All Hyperlinks by Project ID and year
+    @GetMapping("/get-all-hyperlink-by-project-id-and-year/{projectId}")
+    public ResponseEntity<GetHyperlinkResponse> getAllHyperlinksByProjectIdAndYear(
+            @PathVariable String projectId,
+            @RequestParam long year,
+            @RequestParam String era
+    ) {
+        HistoricalYear yearInTimeline = new HistoricalYear(year, era);
+        GetHyperlinkResponse response= hyperlinkRecordService.getAllHyperlinksByProjectIdAndYear(projectId, yearInTimeline);
+        if(response.getStatus().equalsIgnoreCase("failure")){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+        return ResponseEntity.ok(response);
+    }
 
 
 

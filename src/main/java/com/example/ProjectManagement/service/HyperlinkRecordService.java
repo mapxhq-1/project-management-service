@@ -1,14 +1,10 @@
 package com.example.ProjectManagement.service;
 
 
-import com.example.ProjectManagement.dto.HyperlinkDto.CreateHyperlinkRequest;
-import com.example.ProjectManagement.dto.HyperlinkDto.HyperlinksResponse;
-import com.example.ProjectManagement.dto.HyperlinkDto.NormalResponse;
-import com.example.ProjectManagement.dto.HyperlinkDto.UpdateHyperlinkRequest;
-import com.example.ProjectManagement.dto.NotesDto.NotesResponse;
-import com.example.ProjectManagement.dto.NotesDto.Response;
+import com.example.ProjectManagement.dto.HyperlinkDto.*;
+import com.example.ProjectManagement.dto.ImagesDto.ImageGetArrayResponse;
+import com.example.ProjectManagement.model.HistoricalYear;
 import com.example.ProjectManagement.model.Hyperlink;
-import com.example.ProjectManagement.model.Notes;
 import com.example.ProjectManagement.model.Project;
 import com.example.ProjectManagement.repository.HyperlinkRecordRepository;
 import com.example.ProjectManagement.repository.ProjectRecordRepository;
@@ -17,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -30,6 +27,9 @@ public class HyperlinkRecordService {
     @Autowired
     private  HyperlinkRecordRepository hyperlinksRepository;
 
+
+
+    //To check era is correct or not
     public boolean checkEra(String  era){
         // ✅ Using switch for era check
         switch (era) {
@@ -40,7 +40,112 @@ public class HyperlinkRecordService {
         }
         return false;
     }
-    
+
+
+    //GET request Get Hyperlinks by Latitude, Longitude, year_in_timeline, and Project ID
+
+    public GetHyperlinkResponse getHyperlinksByLatLongYear(
+            String projectId,
+            double latitude,
+            double longitude,
+            HistoricalYear yearInTimeline
+    ){
+        // Validate inputs
+        if (projectId == null || projectId.isEmpty()) {
+            return new GetHyperlinkResponse("failure", "Invalid or missing projectId", null);
+        }
+        if (latitude < -90 || latitude > 90) {
+            return new GetHyperlinkResponse("failure", "Invalid or missing latitude value", null);
+        }
+        if (longitude < -180 || longitude > 180) {
+            return new GetHyperlinkResponse("failure", "Invalid or missing longitude value", null);
+        }
+        if (yearInTimeline == null ||
+                yearInTimeline.getEra() == null || yearInTimeline.getEra().isEmpty()) {
+            return new GetHyperlinkResponse("failure", "Invalid or missing yearInTimeline", null);
+        }
+        if(!checkEra(yearInTimeline.getEra())){
+            return new GetHyperlinkResponse("failure", "Give the correct era BCE or CE", null);
+        }
+
+        // Check if project exists
+        Optional<Project> project = projectRepository.findById(projectId);
+        if (project.isEmpty()) {
+            return new GetHyperlinkResponse("failure", "Project not found", null);
+        }
+
+        // Fetch from DB
+        List<Hyperlink> hyperlinks = hyperlinksRepository.findByProjectIdAndLatitudeAndLongitudeAndYearInTimeline(
+                projectId, latitude, longitude, yearInTimeline
+        );
+        if(hyperlinks.isEmpty()){
+             return  new GetHyperlinkResponse("failure"," No Hyperlinks are  found",null);
+        }
+        List<GetHyperlinkResponseDto> hyperlinkDtos =hyperlinks.stream()
+                .map(hyperlink -> new GetHyperlinkResponseDto(
+                        hyperlink.getId(),
+                        hyperlink.getProjectId(),
+                        hyperlink.getLatitude(),
+                        hyperlink.getLongitude(),
+                        hyperlink.getYearInTimeline(),
+                        hyperlink.getHyperlink(),
+                        hyperlink.getCreatedAt(),
+                        hyperlink.getUpdatedAt()
+                ))
+                .toList();
+
+        return new GetHyperlinkResponse("success", null, hyperlinkDtos);
+    }
+
+
+    //Get All Hyperlinks by Project ID and year
+
+    public GetHyperlinkResponse getAllHyperlinksByProjectIdAndYear(
+            String projectId,
+            HistoricalYear yearInTimeline
+    ){
+        if (projectId == null || projectId.isEmpty() || !ObjectId.isValid(projectId)) {
+            return new GetHyperlinkResponse("failure", "Missing or invalid projectId", null);
+        }
+        if (yearInTimeline == null ||
+                yearInTimeline.getEra() == null || yearInTimeline.getEra().isEmpty()) {
+            return new GetHyperlinkResponse("failure", "Invalid or missing yearInTimeline", null);
+        }
+        if(!checkEra(yearInTimeline.getEra())){
+            return new GetHyperlinkResponse("failure", "Give the correct era BCE or CE", null);
+        }
+        // Check if project exists
+        Optional<Project> project = projectRepository.findById(projectId);
+        if (project.isEmpty()) {
+            return new GetHyperlinkResponse("failure", "Project not found", null);
+        }
+
+        // Fetch from DB
+        List<Hyperlink> hyperlinks = hyperlinksRepository.findByProjectIdAndYearInTimeline(
+                projectId,yearInTimeline
+        );
+
+        if (hyperlinks.isEmpty()) {
+            return new GetHyperlinkResponse("failure", "No Hyperlinks found", null);
+        }
+        //Convert to DTO
+       List<GetHyperlinkResponseDto> hyperlinkDtos=hyperlinks.stream()
+               .map(hyperlink ->new GetHyperlinkResponseDto(
+                       hyperlink.getId(),
+                       hyperlink.getProjectId(),
+                       hyperlink.getLatitude(),
+                       hyperlink.getLongitude(),
+                       hyperlink.getYearInTimeline(),
+                       hyperlink.getHyperlink(),
+                       hyperlink.getCreatedAt(),
+                       hyperlink.getUpdatedAt()
+               ))
+               .toList();
+
+        return new GetHyperlinkResponse("success", null, hyperlinkDtos);
+
+    }
+
     //Create a hyperlink service
     
     public HyperlinksResponse createNewHyperlink(CreateHyperlinkRequest request){
@@ -59,10 +164,12 @@ public class HyperlinkRecordService {
         if (request.getLongitude() < -180 || request.getLongitude() > 180) {
             return new HyperlinksResponse("failure", "Invalid longitude", null);
         }
-        if(request.getYearInTimeline()!=null){
-             if(!checkEra(request.getYearInTimeline().getEra())){
-                 return new HyperlinksResponse("failure", "Invalid Era value", null);
-             }
+        if(request.getYearInTimeline()!=null) {
+            if (request.getYearInTimeline().getEra() != null && (!request.getYearInTimeline().getEra().isEmpty())) {
+                if (!checkEra(request.getYearInTimeline().getEra())) {
+                    return new HyperlinksResponse("failure", "Invalid Era value", null);
+                }
+            }
         }
 
         // Check if project exists

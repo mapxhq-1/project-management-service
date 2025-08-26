@@ -8,5 +8,5 @@ import lombok.Data;
 public class GetHyperlinkResponse {
     private String status;
     private String message;
-    private Object hyperlink; // Will hold HyperlinkResponseDto or null
+    private Object hyperlinks; // Will hold HyperlinkResponseDto or null
 }

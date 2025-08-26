@@ -33,7 +33,7 @@ public class NotesRecordController {
 
     //GET request Get Notes by Latitude, Longitude, year_in_timeline, and Project ID
     @GetMapping("/get-note-by-lat-long-year")
-    public GetNoteResponse getNotesByLatLongYear(
+    public ResponseEntity<GetNoteResponse> getNotesByLatLongYear(
             @RequestParam String projectId,
             @RequestParam double latitude,
             @RequestParam double longitude,
@@ -41,18 +41,26 @@ public class NotesRecordController {
             @RequestParam String era
     ) {
         HistoricalYear yearInTimeline = new HistoricalYear(year, era);
-        return notesRecordService.getNotesByLatLongYear(projectId, latitude, longitude, yearInTimeline);
+        GetNoteResponse response= notesRecordService.getNotesByLatLongYear(projectId, latitude, longitude, yearInTimeline);
+        if ("failure".equalsIgnoreCase(response.getStatus())) {
+            return ResponseEntity.badRequest().body(response);
+        }
+        return ResponseEntity.ok(response);
     }
 
     //Get All Notes by Project ID and year
     @GetMapping("/get-all-note-by-project-id-and-year/{projectId}")
-    public GetNoteResponse getAllNotesByProjectAndYear(
+    public ResponseEntity<GetNoteResponse>  getAllNotesByProjectAndYear(
             @PathVariable String projectId,
             @RequestParam long year,
             @RequestParam String era
     ) {
         HistoricalYear yearInTimeline = new HistoricalYear(year, era);
-        return notesRecordService.getAllNotesByProjectIdAndYear(projectId, yearInTimeline);
+        GetNoteResponse response= notesRecordService.getAllNotesByProjectIdAndYear(projectId, yearInTimeline);
+        if ("failure".equalsIgnoreCase(response.getStatus())) {
+            return ResponseEntity.badRequest().body(response);
+        }
+        return ResponseEntity.ok(response);
     }
 
 

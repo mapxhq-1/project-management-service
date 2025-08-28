@@ -11,6 +11,11 @@ import java.util.List;
 @Repository
 public interface HyperlinkRecordRepository extends MongoRepository<Hyperlink,String> {
 
+
+
+    List<Hyperlink> findByProjectId(
+            String projectId
+    );
     List<Hyperlink> findByProjectIdAndLatitudeAndLongitudeAndYearInTimeline(
              String projectId,
              double latitude,

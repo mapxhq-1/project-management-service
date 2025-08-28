@@ -1,9 +1,13 @@
 package com.example.ProjectManagement.model;
 
-import lombok.*;
+
+
+
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+
+import lombok.*;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
@@ -33,28 +37,4 @@ public class Project {
 
     @LastModifiedDate
     private Instant updatedAt;
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Document(collection = "notes_collection")
-    public static class Notes {
-
-        @Id
-        private String id;  // MongoDB ObjectId as String
-
-        private String projectId;
-        private String email;
-        private String noteTitle;
-        private HistoricalYear yearInTimeline;
-        private Double latitude;
-        private Double longitude;
-        private String htmlFileId;
-
-        @CreatedDate
-        private Instant createdAt;
-
-        @LastModifiedDate
-        private Instant updatedAt;
-    }
 }

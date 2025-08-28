@@ -10,6 +10,11 @@ import java.util.List;
 
 @Repository
 public interface NotesRecordRepository extends MongoRepository<Notes,String> {
+
+
+    List<Notes> findByProjectId(
+      String  projectId
+    );
     List<Notes> findByProjectIdAndLatitudeAndLongitudeAndYearInTimeline(
             String projectId,
             double latitude,

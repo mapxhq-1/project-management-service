@@ -62,10 +62,12 @@ public class ProjectCloneService {
             return new CloneProjectResponse(null, "failure: INVALID_PROJECT_ID");
         }
         // ✅ Fetch original project or return failure if not found
-        Project original = projectRepository.findById(projectId).orElse(null);
-        if (original == null) {
-            return new CloneProjectResponse(null, "failure: INVALID_PROJECT_ID");
-        }
+        Project original = projectRepository.findById(projectId)
+                .orElseThrow(() -> new InvalidProjectIdException());
+
+//        if (original == null) {
+//            return new CloneProjectResponse(null, "failure: INVALID_PROJECT_ID");
+//        }
 
         // ✅ Validate ownership/access
         if (!original.getOwnerEmail().equalsIgnoreCase(requestEmail)

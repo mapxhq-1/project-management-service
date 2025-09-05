@@ -30,6 +30,8 @@ class HyperlinkRecordServiceTest {
     @InjectMocks
     private HyperlinkRecordService service;
 
+    private  String validId = "507f1f77bcf86cd799439011"; // ✅ valid 24-char hex ObjectId
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -81,7 +83,7 @@ class HyperlinkRecordServiceTest {
                 anyString(), anyDouble(), anyDouble(), any(HistoricalYear.class)))
                 .thenReturn(List.of(link));
 
-        GetHyperlinkResponse res = service.getHyperlinksByLatLongYear("proj1", 10, 20, new HistoricalYear(2000, "CE"));
+        GetHyperlinkResponse res = service.getHyperlinksByLatLongYear("proj1", 10.98, 20.98, new HistoricalYear(2000, "CE"));
 
         assertEquals("success", res.getStatus());
         assertNull(res.getMessage());
@@ -91,10 +93,20 @@ class HyperlinkRecordServiceTest {
 
     // --- getAllHyperlinksByProjectIdAndYear ---
     @Test
-    void getAllHyperlinksByProjectIdAndYear_projectNotFound_returnsFailure() {
+    void getAllHyperlinksByProjectIdAndYear_InvalidProjectId_returnsFailure() {
         when(projectRepository.findById("proj1")).thenReturn(Optional.empty());
 
         GetHyperlinkResponse res = service.getAllHyperlinksByProjectIdAndYear("proj1", new HistoricalYear(2000, "CE"));
+
+        assertEquals("failure", res.getStatus());
+        assertEquals("Missing or invalid projectId", res.getMessage());
+    }
+
+    @Test
+    void getAllHyperlinksByProjectIdAndYear_ProjectNotFound_returnsFailure() {
+        when(projectRepository.findById(validId)).thenReturn(Optional.empty());
+
+        GetHyperlinkResponse res = service.getAllHyperlinksByProjectIdAndYear(validId, new HistoricalYear(2000, "CE"));
 
         assertEquals("failure", res.getStatus());
         assertEquals("Project not found", res.getMessage());
@@ -102,19 +114,21 @@ class HyperlinkRecordServiceTest {
 
     @Test
     void getAllHyperlinksByProjectIdAndYear_success() {
-        when(projectRepository.findById("proj1")).thenReturn(Optional.of(new Project()));
+        when(projectRepository.findById(validId)).thenReturn(Optional.of(new Project()));
         Hyperlink link = new Hyperlink();
         link.setId("id1");
-        link.setProjectId("proj1");
-        link.setLatitude(10.08);
-        link.setLongitude(20.89);
+        link.setProjectId(validId);
+        link.setLatitude(10.98);
+        link.setLongitude(20.98);
         link.setYearInTimeline(new HistoricalYear(2000, "CE"));
         link.setHyperlink("http://test.com");
+        link.setCreatedAt(Instant.now());
+        link.setUpdatedAt(Instant.now());
 
         when(hyperlinksRepository.findByProjectIdAndYearInTimeline(anyString(), any(HistoricalYear.class)))
                 .thenReturn(List.of(link));
 
-        GetHyperlinkResponse res = service.getAllHyperlinksByProjectIdAndYear("proj1", new HistoricalYear(2000, "CE"));
+        GetHyperlinkResponse res = service.getAllHyperlinksByProjectIdAndYear(validId, new HistoricalYear(2000, "CE"));
 
         assertEquals("success", res.getStatus());
         assertNull(res.getMessage());
@@ -187,16 +201,16 @@ class HyperlinkRecordServiceTest {
         req.setYearInTimeline(new HistoricalYear(2020, "CE"));
 
         Hyperlink link = new Hyperlink();
-        link.setId("id1");
+        link.setId(validId);
         link.setEmail("email@test.com");
 
-        when(hyperlinksRepository.findById("id1")).thenReturn(Optional.of(link));
+        when(hyperlinksRepository.findById(validId)).thenReturn(Optional.of(link));
 
-        HyperlinksResponse res = service.updateHyperlinkById("id1", "email@test.com", req);
+        HyperlinksResponse res = service.updateHyperlinkById(validId, "email@test.com", req);
 
         assertEquals("success", res.getStatus());
         assertNull(res.getMessage());
-        assertEquals("id1",res.getHyperlinkId());
+        assertEquals(validId,res.getHyperlinkId());
     }
 
     // --- deleteHyperlinkById ---
@@ -210,15 +224,18 @@ class HyperlinkRecordServiceTest {
 
     @Test
     void deleteHyperlinkById_success() {
+
+
         Hyperlink link = new Hyperlink();
-        link.setId("id1");
+        link.setId(validId);
         link.setEmail("test@email.com");
 
-        when(hyperlinksRepository.findById("id1")).thenReturn(Optional.of(link));
+        when(hyperlinksRepository.findById(validId)).thenReturn(Optional.of(link));
 
-        NormalResponse res = service.deleteHyperlinkById("id1", "test@email.com");
+        NormalResponse res = service.deleteHyperlinkById(validId, "test@email.com");
 
         assertEquals("success", res.getStatus());
         assertNull(res.getMessage());
     }
+
 }

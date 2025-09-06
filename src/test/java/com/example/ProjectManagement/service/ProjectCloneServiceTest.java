@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.io.IOException;
@@ -101,21 +102,31 @@ class ProjectCloneServiceTest {
 
     @Test
     void cloneProject_fileCopyError_returnsFailure() throws Exception {
-        when(projectRepository.findById(originalProject.getId()))
-                .thenReturn(Optional.of(originalProject));
+        String projectId = "507f1f77bcf86cd799439011";
+
+        Project project = new Project();
+        project.setId(projectId);
+        project.setOwnerEmail("owner@test.com");
+        project.setAccessorList(Collections.emptyList());
+
+        // Mock repo responses
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
         when(objectMapper.convertValue(any(Project.class), eq(Project.class)))
                 .thenReturn(new Project());
-        Project saved = new Project();
 
+        Project saved = new Project();
         saved.setId("cloned123");
         when(projectRepository.save(any(Project.class))).thenReturn(saved);
 
-        // Simulate IOException during cloneNotes
-        doThrow(new IOException())
-                .when(notesRepository).findByProjectId(originalProject.getId());
+        // Spy the service so we can override cloneNotes
+        ProjectCloneService spyService = Mockito.spy(service);
+        doThrow(new IOException("Simulated file copy error"))
+                .when(spyService).cloneNotes(anyString(), anyString(), anyString());
 
-        CloneProjectResponse res = service.CloneProject("owner@test.com", originalProject.getId());
+        // Call the method
+        CloneProjectResponse res = spyService.CloneProject("owner@test.com", projectId);
 
+        // Verify
         assertEquals("failure: FILE_COPY_ERROR", res.getStatus());
         assertNull(res.getProjectId());
     }

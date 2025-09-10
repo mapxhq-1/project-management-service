@@ -1,5 +1,6 @@
 package com.example.ProjectManagement.model;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,22 +11,21 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 
+
+@AllArgsConstructor
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
-@Document(collection = "notes_collection")
-public class Notes {
-
+@Document("hyperlink_collection")
+public class Hyperlink {
     @Id
-    private String id;  // MongoDB ObjectId as String
-
+    private String id;
     private String projectId;
     private String email;
-    private String noteTitle;
+    private String hyperlinkTitle;
     private HistoricalYear yearInTimeline;
     private Double latitude;
     private Double longitude;
-    private String htmlFileId;
+    private String hyperlink;
 
     @CreatedDate
     private Instant createdAt;

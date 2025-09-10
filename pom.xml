@@ -34,6 +34,15 @@
 			<scope>test</scope>
 		</dependency>
 
+
+		<!-- Mockito dependency -->
+		<!-- Mockito dependency -->
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+
 		<!-- MongoDB support -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

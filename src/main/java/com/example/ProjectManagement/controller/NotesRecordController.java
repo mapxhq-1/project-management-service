@@ -20,10 +20,22 @@ import org.springframework.web.bind.annotation.*;
 public class NotesRecordController {
     @Autowired
     private NotesRecordService notesRecordService;
+    // ✅ Utility method to enforce client_name check
+    private void validateClientName(String clientName) {
+        if (!"mapx".equalsIgnoreCase(clientName)) {
+            if(!"mapdesk".equalsIgnoreCase(clientName)) {
+                throw new IllegalArgumentException("Invalid client_name. Expected 'mapx' or 'mapdesk'.");
+            }
+        }
+    }
 
     //GET request to get the notes details by id
     @GetMapping("/get-note-by-id/{noteId}")
-    public ResponseEntity<GetNoteResponse> getNoteById(@PathVariable String noteId) {
+    public ResponseEntity<GetNoteResponse> getNoteById(
+            @PathVariable String noteId,
+            @RequestHeader("client_name") String clientName
+    ) {
+        validateClientName(clientName);
         GetNoteResponse response = notesRecordService.getNoteById(noteId);
         if ("failure".equalsIgnoreCase(response.getStatus())) {
             return ResponseEntity.badRequest().body(response);
@@ -38,8 +50,11 @@ public class NotesRecordController {
             @RequestParam double latitude,
             @RequestParam double longitude,
             @RequestParam long year,
-            @RequestParam String era
+            @RequestParam String era,
+            @RequestHeader("client_name") String clientName
+
     ) {
+        validateClientName(clientName);
         HistoricalYear yearInTimeline = new HistoricalYear(year, era);
         GetNoteResponse response= notesRecordService.getNotesByLatLongYear(projectId, latitude, longitude, yearInTimeline);
         if ("failure".equalsIgnoreCase(response.getStatus())) {
@@ -53,8 +68,11 @@ public class NotesRecordController {
     public ResponseEntity<GetNoteResponse>  getAllNotesByProjectAndYear(
             @PathVariable String projectId,
             @RequestParam long year,
-            @RequestParam String era
+            @RequestParam String era,
+            @RequestHeader("client_name") String clientName
+
     ) {
+        validateClientName(clientName);
         HistoricalYear yearInTimeline = new HistoricalYear(year, era);
         GetNoteResponse response= notesRecordService.getAllNotesByProjectIdAndYear(projectId, yearInTimeline);
         if ("failure".equalsIgnoreCase(response.getStatus())) {
@@ -67,7 +85,11 @@ public class NotesRecordController {
     //To create a new notes
 
     @PostMapping("/create-new-note")
-    public ResponseEntity<NotesResponse> createNewNote(@RequestBody CreateNoteRequest request) {
+    public ResponseEntity<NotesResponse> createNewNote(
+            @RequestBody CreateNoteRequest request,
+            @RequestHeader("client_name") String clientName
+    ) {
+        validateClientName(clientName);
         NotesResponse response = notesRecordService.createNewNote(request);
         if ("failure".equalsIgnoreCase(response.getStatus())) {
             return ResponseEntity.badRequest().body(response);
@@ -80,8 +102,12 @@ public class NotesRecordController {
     public ResponseEntity<NotesResponse> updateNote(
             @PathVariable String noteId,
             @RequestParam String email,
-            @RequestBody UpdateNoteRequest request){
-          NotesResponse response=notesRecordService.updateNote(noteId,email,request);
+            @RequestBody UpdateNoteRequest request,
+            @RequestHeader("client_name") String clientName
+    ){
+        validateClientName(clientName);
+
+        NotesResponse response=notesRecordService.updateNote(noteId,email,request);
         if ("failure".equalsIgnoreCase(response.getStatus())) {
             return ResponseEntity.badRequest().body(response);
         }
@@ -92,7 +118,10 @@ public class NotesRecordController {
     @DeleteMapping("/delete-note/{noteId}")
     public ResponseEntity<Response> deleteNote(
             @PathVariable String noteId,
-            @RequestParam String email){
+            @RequestParam String email,
+            @RequestHeader("client_name") String clientName
+    ){
+        validateClientName(clientName);
         Response response = notesRecordService.deleteNoteById(noteId, email);
         if(response.getStatus().equalsIgnoreCase("failure")){
             return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);

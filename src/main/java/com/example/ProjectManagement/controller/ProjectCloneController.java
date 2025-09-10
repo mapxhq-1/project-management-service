@@ -16,12 +16,24 @@ public class ProjectCloneController {
     @Autowired
     private ProjectCloneService projectService;
 
+    // ✅ Utility method to enforce client_name check
+    private void validateClientName(String clientName) {
+        if (!"mapx".equalsIgnoreCase(clientName)) {
+            if(!"mapdesk".equalsIgnoreCase(clientName)) {
+                throw new IllegalArgumentException("Invalid client_name. Expected 'mapx' or 'mapdesk'.");
+            }
+        }
+    }
+
     @PostMapping("/clone-project")
 
     public ResponseEntity<CloneProjectResponse> CloneProject(
              @RequestParam("email") String email,
-             @RequestBody ProjectCloneRequest project
+             @RequestBody ProjectCloneRequest project,
+             @RequestHeader("client_name") String clientName
+
     ){
+        validateClientName(clientName);
         String projectId=project.getProjectId();
          CloneProjectResponse response=projectService.CloneProject(email,projectId);
 //        if ("failure: INVALID_PROJECT_ID".equalsIgnoreCase(response.getStatus())) {

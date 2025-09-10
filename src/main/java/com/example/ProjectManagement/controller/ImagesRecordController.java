@@ -22,11 +22,22 @@ public class ImagesRecordController {
      @Autowired
     private ImagesRecordService imageService;
 
+    // ✅ Utility method to enforce client_name check
+    private void validateClientName(String clientName) {
+        if (!"mapx".equalsIgnoreCase(clientName)) {
+            if(!"mapdesk".equalsIgnoreCase(clientName)) {
+                throw new IllegalArgumentException("Invalid client_name. Expected 'mapx' or 'mapdesk'.");
+            }
+        }
+    }
 
 
      //GET API API 1: Get Image by ID
     @GetMapping("/get-image-by-id/{imageId}")
-    public ResponseEntity<ImageGetResponse> getById(@PathVariable String imageId){
+    public ResponseEntity<ImageGetResponse> getById(
+            @PathVariable String imageId,
+            @RequestHeader("client_name") String clientName){
+        validateClientName(clientName);
         ImageGetResponse response=imageService.getById(imageId);
         if(response.getStatus().equalsIgnoreCase("failure")){
             return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
@@ -39,9 +50,11 @@ public class ImagesRecordController {
     public ResponseEntity<ImageGetArrayResponse> getImageByLatLong(
             @RequestParam("projectId") String  projectId,
             @RequestParam("latitude") double  latitude,
-            @RequestParam("longitude") double longitude
+            @RequestParam("longitude") double longitude,
+            @RequestHeader("client_name") String clientName
     )
     {
+        validateClientName(clientName);
         ImageGetArrayResponse response = imageService.getImageByLatLong(projectId, latitude, longitude);
         if(response.getStatus().equalsIgnoreCase("failure")){
             return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
@@ -57,9 +70,12 @@ public class ImagesRecordController {
             @RequestParam("latitude") double  latitude,
             @RequestParam("longitude") double longitude,
             @RequestParam("year") long year,
-            @RequestParam("era")  String era
+            @RequestParam("era")  String era,
+            @RequestHeader("client_name") String clientName
     )
     {
+        validateClientName(clientName);
+
         HistoricalYear yearInTimeline=new HistoricalYear(year,era);
         ImageGetArrayResponse response = imageService.getImageByProjectIdLatLongAndYearInTimeline(projectId, latitude, longitude,yearInTimeline);
         if(response.getStatus().equalsIgnoreCase("failure")){
@@ -76,8 +92,11 @@ public class ImagesRecordController {
     //GET API 4:Get All Images by Project ID
     @GetMapping("/get-all-image-by-project-id")
     public ResponseEntity<ImageGetArrayResponse> getImageByProjectId(
-            @RequestParam String projectId
+            @RequestParam String projectId,
+            @RequestHeader("client_name") String clientName
     ){
+        validateClientName(clientName);
+
         ImageGetArrayResponse response=imageService.getImagesByProjectId(projectId);
         if(response.getStatus().equalsIgnoreCase("failure")){
              return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -92,8 +111,11 @@ public class ImagesRecordController {
     public  ResponseEntity<ImageGetArrayResponse>  getImageByProjectIdYearInTimeline(
             @RequestParam String  projectId,
             @RequestParam  long year,
-            @RequestParam String era
+            @RequestParam String era,
+            @RequestHeader("client_name") String clientName
     ){
+        validateClientName(clientName);
+
         HistoricalYear yearInTimeline = new HistoricalYear(year, era);
         ImageGetArrayResponse response=imageService.getImageByProjectIdYearInTimeline(projectId,yearInTimeline);
         if(response.getStatus().equalsIgnoreCase("failure")){
@@ -106,9 +128,12 @@ public class ImagesRecordController {
      //GET API 6:fetch Image Content by File Name
     @GetMapping("/fetch-image-content/{fileName}")
     public ResponseEntity<byte[]> getImageByFileName(
-            @PathVariable("fileName") String fileName
+            @PathVariable("fileName") String fileName,
+            @RequestHeader("client_name") String clientName
     ) throws IOException
     {
+        validateClientName(clientName);
+
         return imageService.getImageByFileName(fileName);
     }
 
@@ -123,8 +148,12 @@ public class ImagesRecordController {
             @RequestParam("imageFile") MultipartFile imageFile,
             @RequestParam("caption") String caption,
             @RequestParam("year") String year,
-            @RequestParam("era") String era
+            @RequestParam("era") String era,
+            @RequestHeader("client_name") String clientName
+
     ) {
+        validateClientName(clientName);
+
         return imageService.uploadImage(projectId, email, latitude, longitude, imageFile, caption, year, era);
     }
 
@@ -136,8 +165,10 @@ public class ImagesRecordController {
              @RequestParam("imageFile") MultipartFile imageFile,
              @RequestParam("caption") String caption,
              @RequestParam("year") String year,
-             @RequestParam("era") String era
+             @RequestParam("era") String era,
+             @RequestHeader("client_name") String clientName
     ){
+        validateClientName(clientName);
         return imageService.updateImage(imageId,email,imageFile,caption,year,era);
     }
 
@@ -145,8 +176,11 @@ public class ImagesRecordController {
     @DeleteMapping("/delete-image-by-id/{imageId}")
     public Response deleteImageById(
             @PathVariable String imageId,
-            @RequestParam String email
+            @RequestParam String email,
+            @RequestHeader("client_name") String clientName
+
     ) {
+        validateClientName(clientName);
         return imageService.deleteImageById(imageId, email);
     }
 }

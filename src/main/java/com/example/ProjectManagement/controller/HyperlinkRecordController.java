@@ -21,6 +21,15 @@ public class HyperlinkRecordController {
     @Autowired
     private  HyperlinkRecordService hyperlinkRecordService;
 
+    // ✅ Utility method to enforce client_name check
+    private void validateClientName(String clientName) {
+        if (!"mapx".equalsIgnoreCase(clientName)) {
+            if(!"mapdesk".equalsIgnoreCase(clientName)) {
+                throw new IllegalArgumentException("Invalid client_name. Expected 'mapx' or 'mapdesk'.");
+            }
+        }
+    }
+
     //GET request Get Hyperlinks by Latitude, Longitude, year_in_timeline, and Project ID
     @GetMapping("/get-hyperlink-by-lat-long-year")
     public ResponseEntity<GetHyperlinkResponse> getHyperlinksByLatLongYear(
@@ -28,8 +37,11 @@ public class HyperlinkRecordController {
             @RequestParam double latitude,
             @RequestParam double longitude,
             @RequestParam long year,
-            @RequestParam String era
+            @RequestParam String era,
+            @RequestHeader("client_name") String clientName
     ) {
+        validateClientName(clientName);
+
         HistoricalYear yearInTimeline = new HistoricalYear(year, era);
         GetHyperlinkResponse response= hyperlinkRecordService.getHyperlinksByLatLongYear(projectId, latitude, longitude, yearInTimeline);
         if(response.getStatus().equalsIgnoreCase("failure")){
@@ -44,8 +56,10 @@ public class HyperlinkRecordController {
     public ResponseEntity<GetHyperlinkResponse> getAllHyperlinksByProjectIdAndYear(
             @PathVariable String projectId,
             @RequestParam long year,
-            @RequestParam String era
+            @RequestParam String era,
+            @RequestHeader("client_name") String clientName
     ) {
+        validateClientName(clientName);
         HistoricalYear yearInTimeline = new HistoricalYear(year, era);
         GetHyperlinkResponse response= hyperlinkRecordService.getAllHyperlinksByProjectIdAndYear(projectId, yearInTimeline);
         if(response.getStatus().equalsIgnoreCase("failure")){
@@ -63,7 +77,11 @@ public class HyperlinkRecordController {
 
     @PostMapping("/create-new-hyperlink")
     public ResponseEntity<HyperlinksResponse> createNewHyperlink(
-            @RequestBody CreateHyperlinkRequest request) {
+            @RequestBody CreateHyperlinkRequest request,
+            @RequestHeader("client_name") String clientName
+    ) {
+        validateClientName(clientName);
+
         HyperlinksResponse response = hyperlinkRecordService.createNewHyperlink(request);
         if ("failure".equalsIgnoreCase(response.getStatus())) {
             return ResponseEntity.badRequest().body(response);
@@ -78,7 +96,10 @@ public class HyperlinkRecordController {
     public ResponseEntity<HyperlinksResponse> updateHyperlinkById(
             @PathVariable("hyperlinkId") String hyperlinkId,
             @RequestParam("email") String email,
-            @RequestBody UpdateHyperlinkRequest request){
+            @RequestBody UpdateHyperlinkRequest request,
+            @RequestHeader("client_name") String clientName
+    ){
+        validateClientName(clientName);
         HyperlinksResponse response=hyperlinkRecordService.updateHyperlinkById(hyperlinkId,email,request);
         if ("failure".equalsIgnoreCase(response.getStatus())) {
             return ResponseEntity.badRequest().body(response);
@@ -91,14 +112,14 @@ public class HyperlinkRecordController {
     @DeleteMapping("/delete-hyperlink/{hyperlinkId}")
     public ResponseEntity<NormalResponse> deleteHyperlinkById(
             @PathVariable String hyperlinkId,
-            @RequestParam String email
+            @RequestParam String email,
+            @RequestHeader("client_name") String clientName
     ){
+        validateClientName(clientName);
         NormalResponse response = hyperlinkRecordService.deleteHyperlinkById(hyperlinkId, email);
         if(response.getStatus().equalsIgnoreCase("failure")){
             return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
         return ResponseEntity.ok(response);
     }
-
-
 }

@@ -33,16 +33,9 @@ public class NotesRecordService {
     private NotesRecordRepository notesRepository;
 
 
-    //To check the era
-    public boolean checkEra(String  era){
-        // ✅ Using switch for era check
-        switch (era) {
-            case "BCE", "CE": return true;
-            // valid, do nothing
-            default:
-                break;
-        }
-        return false;
+    // To check the era
+    public boolean checkEra(String era) {
+        return "BCE".equals(era) || "CE".equals(era);
     }
 
 
@@ -223,7 +216,7 @@ public class NotesRecordService {
             // Save to DB
             Notes note = new Notes();
             note.setProjectId(request.getProjectId());
-            note.setEmail(request.getEmail());
+            note.setEmail(request.getEmail()); // ✅ use header email
             note.setNoteTitle(request.getNoteTitle());
             note.setYearInTimeline(request.getYearInTimeline());
             note.setLatitude(request.getLatitude());
@@ -345,7 +338,4 @@ public class NotesRecordService {
             return new Response("failure", "Failed to delete note record");
         }
     }
-
-
-
 }

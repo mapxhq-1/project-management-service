@@ -26,6 +26,7 @@ public class Notes {
     private Double latitude;
     private Double longitude;
     private String htmlFileId;
+    private String  backgroundColor;
 
     @CreatedDate
     private Instant createdAt;

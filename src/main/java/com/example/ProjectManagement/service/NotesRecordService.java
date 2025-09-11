@@ -222,6 +222,7 @@ public class NotesRecordService {
             note.setLatitude(request.getLatitude());
             note.setLongitude(request.getLongitude());
             note.setHtmlFileId(uuid);
+            note.setBackgroundColor(request.getBackgroundColor());
             note.setCreatedAt(Instant.now());
             note.setUpdatedAt(Instant.now());
 

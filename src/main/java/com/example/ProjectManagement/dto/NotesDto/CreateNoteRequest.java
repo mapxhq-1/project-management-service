@@ -12,4 +12,6 @@ public class CreateNoteRequest {
     private double latitude;                 // Required
     private double longitude;                // Required
     private String htmlText;                 // Required
+    private String  backgroundColor;          // Required
+
 }

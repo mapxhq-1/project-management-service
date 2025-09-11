@@ -20,12 +20,26 @@ public class ProjectRecordController {
 
     private final ProjectRecordService projectRecordService;
 
+    // ✅ Utility method to enforce client_name check
+    private void validateClientName(String clientName) {
+        if (!"mapx".equalsIgnoreCase(clientName)) {
+                throw new IllegalArgumentException("Invalid client_name. Expected 'mapx'.");
+
+        }
+    }
+
+
+
     public ProjectRecordController(ProjectRecordService projectRecordService) {
         this.projectRecordService = projectRecordService;
     }
 
     @PostMapping("/create-new-project")
-    public ResponseEntity<StatusResponse> createNewProject(@RequestBody ProjectRequest project) {
+    public ResponseEntity<StatusResponse> createNewProject(
+            @RequestBody ProjectRequest project,
+            @RequestHeader("client_name") String clientName
+    ) {
+         validateClientName(clientName);
         StatusResponse response = projectRecordService.createNewProject(project);
 
         if ("failure".equalsIgnoreCase(response.getStatus())) {
@@ -36,7 +50,11 @@ public class ProjectRecordController {
     }
     
     @PatchMapping("/update-project")
-    public ResponseEntity<StatusResponse> updateProject(@RequestBody ProjectUpdateRequest request) {
+    public ResponseEntity<StatusResponse> updateProject(
+            @RequestBody ProjectUpdateRequest request,
+            @RequestHeader("client_name") String clientName
+    ) {
+        validateClientName(clientName);
         StatusResponse response = projectRecordService.updateProject(request);
         if (response.getMessage()==null){
             return ResponseEntity.ok(response);
@@ -59,28 +77,38 @@ public class ProjectRecordController {
     }
      @GetMapping("/get-all-projects-of-owner")
     public ResponseEntity<GetResponse<List<Project>>> getAllProjectsOfOwner(
-            @RequestParam String ownerEmail) {
+            @RequestParam String ownerEmail,
+            @RequestHeader("client_name") String clientName
+            ){
+        validateClientName(clientName);
         return projectRecordService.getAllProjectsOfOwner(ownerEmail);
     }
 
     // 2. Get All Projects Accessible by a User
     @GetMapping("/get-all-accessible-projects")
     public ResponseEntity<GetResponse<List<Project>>> getAllAccessibleProjects(
-            @RequestParam String email) {
+            @RequestParam String email,
+            @RequestHeader("client_name") String clientName) {
+
+        validateClientName(clientName);
         return projectRecordService.getAllAccessibleProjects(email);
     }
 
     // 3. Get Project by ID
     @GetMapping("/get-project-by-id/{projectId}")
     public ResponseEntity<GetResponse<Project>> getProjectById(
-            @PathVariable String projectId) {
+            @PathVariable String projectId,
+            @RequestHeader("client_name") String clientName) {
+        validateClientName(clientName);
         return projectRecordService.getProjectById(projectId);
     }
     @DeleteMapping("/delete-project/{projectId}")
     public ResponseEntity<DeleteProjectResponse> deleteProject(
             @PathVariable("projectId") String projectId,
-            @RequestParam("ownerEmail") String ownerEmail) {
+            @RequestParam("ownerEmail") String ownerEmail,
+            @RequestHeader("client_name") String clientName) {
 
+       validateClientName(clientName);
         DeleteProjectResponse response = projectRecordService.deleteProject(projectId, ownerEmail);
 
         if ("success".equals(response.getStatus())) {

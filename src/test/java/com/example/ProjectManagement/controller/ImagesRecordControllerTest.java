@@ -50,7 +50,7 @@ class ImagesRecordControllerTest {
     void testGetById_success() {
         when(imageService.getById("123")).thenReturn(imageGetResponse);
 
-        ResponseEntity<ImageGetResponse> response = controller.getById("123");
+        ResponseEntity<ImageGetResponse> response = controller.getById("123","mapx");
 
         assertEquals("success", response.getBody().getStatus());
         verify(imageService).getById("123");
@@ -61,7 +61,7 @@ class ImagesRecordControllerTest {
         when(imageService.getImageByLatLong("proj1", 10.0, 20.0)).thenReturn(arrayResponse);
 
         ResponseEntity<ImageGetArrayResponse> response =
-                controller.getImageByLatLong("proj1", 10.0, 20.0);
+                controller.getImageByLatLong("proj1", 10.0, 20.0,"mapx");
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("success", response.getBody().getStatus());
@@ -71,7 +71,7 @@ class ImagesRecordControllerTest {
     void testGetImageByProjectId_success() {
         when(imageService.getImagesByProjectId("proj1")).thenReturn(arrayResponse);
 
-        ResponseEntity<ImageGetArrayResponse> response = controller.getImageByProjectId("proj1");
+        ResponseEntity<ImageGetArrayResponse> response = controller.getImageByProjectId("proj1","mapx");
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("success", response.getBody().getStatus());
@@ -82,7 +82,7 @@ class ImagesRecordControllerTest {
         ImageGetArrayResponse failResponse = new ImageGetArrayResponse("failure", "Invalid project", null);
         when(imageService.getImagesByProjectId("projX")).thenReturn(failResponse);
 
-        ResponseEntity<ImageGetArrayResponse> response = controller.getImageByProjectId("projX");
+        ResponseEntity<ImageGetArrayResponse> response = controller.getImageByProjectId("projX","mapx");
 
         assertEquals(400,response.getStatusCode().value());
         assertEquals("failure", response.getBody().getStatus());
@@ -95,7 +95,7 @@ class ImagesRecordControllerTest {
 
         when(imageService.getImageByFileName("img.png")).thenReturn(entity);
 
-        ResponseEntity<byte[]> response = controller.getImageByFileName("img.png");
+        ResponseEntity<byte[]> response = controller.getImageByFileName("img.png","mapx");
 
         assertEquals(200,response.getStatusCode().value());
         assertArrayEquals(data, response.getBody());
@@ -109,7 +109,7 @@ class ImagesRecordControllerTest {
                 mockFile, "caption", "2025", "CE")).thenReturn(uploadResponse);
 
         ImageUploadResponse response = controller.uploadImage("proj1", "user@mail.com", "10", "20",
-                mockFile, "caption", "2025", "CE");
+                mockFile, "caption", "2025", "CE","mapx");
 
         assertEquals("success", response.getStatus());
         assertEquals("image123", response.getImageId());
@@ -122,7 +122,7 @@ class ImagesRecordControllerTest {
                 .thenReturn(uploadResponse);
 
         ImageUploadResponse response = controller.updateImage("123", "user@mail.com", mockFile,
-                "new caption", "2025", "CE");
+                "new caption", "2025", "CE","mapx");
 
         assertEquals("success", response.getStatus());
         assertEquals("image123", response.getImageId());
@@ -132,7 +132,7 @@ class ImagesRecordControllerTest {
     void testDeleteImageById_success() {
         when(imageService.deleteImageById("123", "user@mail.com")).thenReturn(deleteResponse);
 
-        Response response = controller.deleteImageById("123", "user@mail.com");
+        Response response = controller.deleteImageById("123", "user@mail.com","mapx");
 
         assertEquals("success", response.getStatus());
         verify(imageService).deleteImageById("123", "user@mail.com");

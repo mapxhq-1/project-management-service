@@ -20,6 +20,7 @@
 		<java.version>17</java.version>
 	</properties>
 
+
 	<dependencies>
 		<!-- Core Spring Boot -->
 		<dependency>
@@ -58,6 +59,8 @@
 
 
 
+
+
 		<!-- Lombok for getters/setters -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -77,6 +80,8 @@
 			<artifactId>spring-boot-starter-webflux</artifactId>
 		</dependency>
 	</dependencies>
+
+
 
 	<build>
 		<plugins>

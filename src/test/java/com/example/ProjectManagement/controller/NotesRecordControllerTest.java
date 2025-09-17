@@ -30,7 +30,7 @@ public class NotesRecordControllerTest {
         GetNoteResponse mockResponse = new GetNoteResponse("failure", "Invalid or missing note ID", null);
         when(notesRecordService.getNoteById(noteId)).thenReturn(mockResponse);
 
-        ResponseEntity<GetNoteResponse> response = notesRecordController.getNoteById(noteId);
+        ResponseEntity<GetNoteResponse> response = notesRecordController.getNoteById(noteId,"mapx");
 
         assertEquals(400, response.getStatusCodeValue());
         assertEquals("failure", response.getBody().getStatus());
@@ -44,7 +44,7 @@ public class NotesRecordControllerTest {
 
         when(notesRecordService.createNewNote(request)).thenReturn(mockResponse);
 
-        ResponseEntity<NotesResponse> response = notesRecordController.createNewNote(request);
+        ResponseEntity<NotesResponse> response = notesRecordController.createNewNote(request,"mapx");
 
         assertEquals(200, response.getStatusCodeValue());
         assertEquals("success", response.getBody().getStatus());

@@ -35,7 +35,7 @@ class HyperlinkRecordControllerTest {
                 .thenReturn(mockResponse);
 
         ResponseEntity<GetHyperlinkResponse> response =
-                controller.getHyperlinksByLatLongYear("proj1", 12.34, 56.78, 2000, "CE");
+                controller.getHyperlinksByLatLongYear("proj1", 12.34, 56.78, 2000, "CE","mapx");
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("success", response.getBody().getStatus());
@@ -49,7 +49,7 @@ class HyperlinkRecordControllerTest {
                 .thenReturn(mockResponse);
 
         ResponseEntity<GetHyperlinkResponse> response =
-                controller.getHyperlinksByLatLongYear("proj1", 12.34, 56.78, 2000, "CE");
+                controller.getHyperlinksByLatLongYear("proj1", 12.34, 56.78, 2000, "CE","mapx");
 
         assertEquals(400, response.getStatusCode().value());
         assertEquals("failure", response.getBody().getStatus());
@@ -63,7 +63,7 @@ class HyperlinkRecordControllerTest {
                 .thenReturn(mockResponse);
 
         ResponseEntity<GetHyperlinkResponse> response =
-                controller.getAllHyperlinksByProjectIdAndYear("proj1", 2020, "CE");
+                controller.getAllHyperlinksByProjectIdAndYear("proj1", 2020, "CE","mapx");
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("success", response.getBody().getStatus());
@@ -76,7 +76,7 @@ class HyperlinkRecordControllerTest {
                 .thenReturn(mockResponse);
 
         ResponseEntity<GetHyperlinkResponse> response =
-                controller.getAllHyperlinksByProjectIdAndYear("proj1", 2020, "CE");
+                controller.getAllHyperlinksByProjectIdAndYear("proj1", 2020, "CE","mapx");
 
         assertEquals(400, response.getStatusCode().value());
         assertEquals("failure", response.getBody().getStatus());
@@ -90,7 +90,7 @@ class HyperlinkRecordControllerTest {
         when(hyperlinkRecordService.createNewHyperlink(any(CreateHyperlinkRequest.class)))
                 .thenReturn(mockResponse);
 
-        ResponseEntity<HyperlinksResponse> response = controller.createNewHyperlink(req);
+        ResponseEntity<HyperlinksResponse> response = controller.createNewHyperlink(req,"mapx");
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("success", response.getBody().getStatus());
@@ -103,7 +103,7 @@ class HyperlinkRecordControllerTest {
         when(hyperlinkRecordService.createNewHyperlink(any(CreateHyperlinkRequest.class)))
                 .thenReturn(mockResponse);
 
-        ResponseEntity<HyperlinksResponse> response = controller.createNewHyperlink(req);
+        ResponseEntity<HyperlinksResponse> response = controller.createNewHyperlink(req,"mapx");
 
         assertEquals(400, response.getStatusCode().value());
         assertEquals("failure", response.getBody().getStatus());
@@ -118,7 +118,7 @@ class HyperlinkRecordControllerTest {
                 .thenReturn(mockResponse);
 
         ResponseEntity<HyperlinksResponse> response =
-                controller.updateHyperlinkById("id1", "test@email.com", req);
+                controller.updateHyperlinkById("id1", "test@email.com", req,"mapx");
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("success", response.getBody().getStatus());
@@ -132,7 +132,7 @@ class HyperlinkRecordControllerTest {
                 .thenReturn(mockResponse);
 
         ResponseEntity<HyperlinksResponse> response =
-                controller.updateHyperlinkById("id1", "wrong@email.com", req);
+                controller.updateHyperlinkById("id1", "wrong@email.com", req,"mapx");
 
         assertEquals(400, response.getStatusCode().value());
         assertEquals("failure", response.getBody().getStatus());
@@ -146,7 +146,7 @@ class HyperlinkRecordControllerTest {
                 .thenReturn(mockResponse);
 
         ResponseEntity<NormalResponse> response =
-                controller.deleteHyperlinkById("id1", "test@email.com");
+                controller.deleteHyperlinkById("id1", "test@email.com","mapx");
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("success", response.getBody().getStatus());
@@ -159,7 +159,7 @@ class HyperlinkRecordControllerTest {
                 .thenReturn(mockResponse);
 
         ResponseEntity<NormalResponse> response =
-                controller.deleteHyperlinkById("id1", "wrong@email.com");
+                controller.deleteHyperlinkById("id1", "wrong@email.com","mapx");
 
         assertEquals(400, response.getStatusCode().value());
         assertEquals("failure", response.getBody().getStatus());

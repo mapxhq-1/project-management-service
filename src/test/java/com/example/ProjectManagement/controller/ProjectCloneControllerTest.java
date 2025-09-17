@@ -40,7 +40,7 @@ class ProjectCloneControllerTest {
         when(projectService.CloneProject(email, "123")).thenReturn(mockResponse);
 
         // Act
-        ResponseEntity<CloneProjectResponse> response = projectCloneController.CloneProject(email, request);
+        ResponseEntity<CloneProjectResponse> response = projectCloneController.CloneProject(email, request,"mapx");
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -61,7 +61,7 @@ class ProjectCloneControllerTest {
         when(projectService.CloneProject(email, "456")).thenReturn(mockResponse);
 
         // Act
-        ResponseEntity<CloneProjectResponse> response = projectCloneController.CloneProject(email, request);
+        ResponseEntity<CloneProjectResponse> response = projectCloneController.CloneProject(email, request,"mapx");
 
         // Assert
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
@@ -82,7 +82,7 @@ class ProjectCloneControllerTest {
         when(projectService.CloneProject(email, "789")).thenReturn(mockResponse);
 
         // Act
-        ResponseEntity<CloneProjectResponse> response = projectCloneController.CloneProject(email, request);
+        ResponseEntity<CloneProjectResponse> response = projectCloneController.CloneProject(email, request,"mapx");
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode()); // defaults to 200

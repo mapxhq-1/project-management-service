@@ -10,5 +10,5 @@ import lombok.Data;
 public class GetNoteResponse {
     private String status;
     private String message;
-    private Object note; // Will hold NoteResponseDto or null
+    private Object notes; // Will hold NoteResponseDto or null
 }

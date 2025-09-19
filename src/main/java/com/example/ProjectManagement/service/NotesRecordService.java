@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.nio.file.Files;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -113,19 +114,33 @@ public class NotesRecordService {
             return new GetNoteResponse("failure", "No notes found", null);
         }
 
-        // Convert to DTO
-        List<GetNoteResponseDto> noteDtos = notes.stream()
-                .map(note -> new GetNoteResponseDto(
-                        note.getId(),
-                        note.getProjectId(),
-                        note.getLatitude(),
-                        note.getLongitude(),
-                        note.getYearInTimeline(),
-                        note.getHtmlFileId(),
-                        note.getCreatedAt(),
-                        note.getUpdatedAt()
-                ))
-                .toList();
+        List<GetNoteResponseDto> noteDtos=new ArrayList<>();
+        for(Notes note:notes){
+            // Read HTML content
+            String noteContent;
+            try {
+                File file = new File(HTML_NOTES_DIR+ note.getHtmlFileId() + ".html");
+                if (!file.exists()) {
+                    return new GetNoteResponse("failure", "Failed to read note content from disk", null);
+                }
+                noteContent = Files.readString(file.toPath());
+            } catch (Exception e) {
+                return new GetNoteResponse("failure", "Failed to read note content from disk", null);
+            }
+            GetNoteResponseDto dto=new GetNoteResponseDto(
+                    note.getId(),
+                    note.getProjectId(),
+                    note.getNoteTitle(),
+                    note.getLatitude(),
+                    note.getLongitude(),
+                    note.getYearInTimeline(),
+                    noteContent,
+                    note.getCreatedAt(),
+                    note.getUpdatedAt()
+            );
+            noteDtos.add(dto);
+
+        }
 
         return new GetNoteResponse("success", null, noteDtos);
     }
@@ -161,6 +176,7 @@ public class NotesRecordService {
                 .map(note -> new GetNoteResponseDto(
                         note.getId(),
                         note.getProjectId(),
+                        note.getNoteTitle(),
                         note.getLatitude(),
                         note.getLongitude(),
                         note.getYearInTimeline(),

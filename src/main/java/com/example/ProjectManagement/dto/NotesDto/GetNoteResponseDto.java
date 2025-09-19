@@ -11,10 +11,11 @@ import java.time.Instant;
 public class GetNoteResponseDto {
     private String noteId;
     private String projectId;
+    private  String  noteTitle;
     private double latitude;
     private double longitude;
     private HistoricalYear yearInTimeline;
-    private String htmlFileId;
+    private String htmlFile;
     private Instant createdAt;
     private Instant updatedAt;
 }

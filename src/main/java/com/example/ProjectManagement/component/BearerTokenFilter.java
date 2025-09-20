@@ -60,7 +60,7 @@ public class BearerTokenFilter extends OncePerRequestFilter {
 //            return;
 //        }
 //
-//        if (requestUri.equals("/project-management-service/get-note-by-lat-long-year")) {
+//        if (requestUri.matches("^/project-management-service/get-all-note-by-project-id-and-year/.*$")) {
 //            filterChain.doFilter(request, response);
 //            return;
 //        }

@@ -60,7 +60,7 @@ class NotesRecordServiceTest {
 
         assertEquals("failure", response.getStatus());
         assertEquals("Invalid or missing note ID", response.getMessage());
-        assertNull(response.getNote());
+        assertNull(response.getNotes());
     }
 
     // 2️⃣ Valid id but note not found
@@ -73,7 +73,7 @@ class NotesRecordServiceTest {
 
         assertEquals("failure", response.getStatus());
         assertEquals("Note not found", response.getMessage());
-        assertNull(response.getNote());
+        assertNull(response.getNotes());
     }
 
     // 3️⃣ Note found but HTML file missing
@@ -92,7 +92,7 @@ class NotesRecordServiceTest {
 
         assertEquals("failure", response.getStatus());
         assertEquals("Failed to read note content from disk", response.getMessage());
-        assertNull(response.getNote());
+        assertNull(response.getNotes());
     }
 
     @Test
@@ -112,8 +112,8 @@ class NotesRecordServiceTest {
         GetNoteResponse response = notesRecordService.getNoteById(noteId);
 
         assertEquals("success", response.getStatus());
-        assertNotNull(response.getNote());
-        NoteResponseDto noteDto = (NoteResponseDto) response.getNote();
+        assertNotNull(response.getNotes());
+        NoteResponseDto noteDto = (NoteResponseDto) response.getNotes();
 
         assertEquals(noteId, noteDto.getNoteId());
         assertTrue(noteDto.getNoteContent().contains("Test Note"));

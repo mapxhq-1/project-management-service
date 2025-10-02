@@ -85,6 +85,7 @@ public class HyperlinkRecordService {
                 .map(hyperlink -> new GetHyperlinkResponseDto(
                         hyperlink.getId(),
                         hyperlink.getProjectId(),
+                        hyperlink.getHyperlinkTitle(),
                         hyperlink.getLatitude(),
                         hyperlink.getLongitude(),
                         hyperlink.getYearInTimeline(),
@@ -133,6 +134,7 @@ public class HyperlinkRecordService {
                .map(hyperlink ->new GetHyperlinkResponseDto(
                        hyperlink.getId(),
                        hyperlink.getProjectId(),
+                       hyperlink.getHyperlinkTitle(),
                        hyperlink.getLatitude(),
                        hyperlink.getLongitude(),
                        hyperlink.getYearInTimeline(),

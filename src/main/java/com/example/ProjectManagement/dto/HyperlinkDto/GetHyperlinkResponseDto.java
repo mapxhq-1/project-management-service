@@ -11,6 +11,7 @@ import java.time.Instant;
 public class GetHyperlinkResponseDto {
     private String hyperlinkId;
     private String projectId;
+    private String hyperlinkTitle;
     private double latitude;
     private double longitude;
     private HistoricalYear yearInTimeline;

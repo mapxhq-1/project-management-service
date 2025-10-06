@@ -15,6 +15,10 @@ public interface MapShapesRepository extends MongoRepository<MapShapes,String> {
 
     // Fetch from DB
 
+    List<MapShapes> findByProjectId(
+            String projectId
+    );
+
     List<MapShapes> findByProjectIdAndYearInTimeline(
              String projectId,
              HistoricalYear yearInTimeline

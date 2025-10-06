@@ -2,14 +2,8 @@ package com.example.ProjectManagement.service;
 
 
 import com.example.ProjectManagement.dto.CloneProjectDto.CloneProjectResponse;
-import com.example.ProjectManagement.model.Hyperlink;
-import com.example.ProjectManagement.model.Images;
-import com.example.ProjectManagement.model.Notes;
-import com.example.ProjectManagement.model.Project;
-import com.example.ProjectManagement.repository.HyperlinkRecordRepository;
-import com.example.ProjectManagement.repository.ImagesRecordRepository;
-import com.example.ProjectManagement.repository.NotesRecordRepository;
-import com.example.ProjectManagement.repository.ProjectRecordRepository;
+import com.example.ProjectManagement.model.*;
+import com.example.ProjectManagement.repository.*;
 import com.example.ProjectManagement.Exception.InvalidProjectIdException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bson.types.ObjectId;
@@ -39,6 +33,9 @@ public class ProjectCloneService {
     @Autowired
     private HyperlinkRecordRepository hyperlinkRepository;
 
+    @Autowired
+    private MapShapesRepository mapRepostory;
+
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -52,6 +49,8 @@ public class ProjectCloneService {
 
     private static final String HTML_NOTES_DIR = "src/main/resources/html_notes/";
     private static final String UPLOAD_DIR = System.getProperty("user.dir") + "/src/main/resources/image_content/";
+
+    private static final String UPLOAD_MAPSHAPES = System.getProperty("user.dir") + "/src/main/resources/map_shapes_content/";
 
     public CloneProjectResponse CloneProject(
           String requestEmail,
@@ -88,6 +87,7 @@ public class ProjectCloneService {
             cloneNotes(projectId, clonedProjectId, requestEmail);
             cloneImages(projectId, clonedProjectId, requestEmail);
             cloneHyperlinks(projectId, clonedProjectId, requestEmail);
+            cloneMapShapes(projectId, clonedProjectId, requestEmail);
             return new CloneProjectResponse(clonedProjectId, "success");
         }catch (IOException e) {
             return new CloneProjectResponse(null, "failure: FILE_COPY_ERROR");
@@ -158,11 +158,39 @@ public class ProjectCloneService {
             clonedLink.setCreatedAt(Instant.now());
             clonedLink.setUpdatedAt(Instant.now());
             hyperlinkRepository.save(clonedLink);
-
         }
     }
 
 
+    // ... (keep your existing cloneNotes, cloneImages, cloneHyperlinks methods) ...
+
+    public void cloneMapShapes(String originalProjectId, String clonedProjectId, String requestEmail) throws IOException {
+        List<MapShapes> originalShapes = mapRepostory.findByProjectId(originalProjectId);
+
+        for (MapShapes originalShape : originalShapes) {
+            // Create a new MapShapes object
+            MapShapes clonedShape = new MapShapes();
+
+            // Copy the geojson file
+            String oldFileId = originalShape.getFileId();
+            if (oldFileId != null && !oldFileId.isEmpty()) {
+                String newFileUuid = UUID.randomUUID().toString();
+                Files.copy(Paths.get(UPLOAD_MAPSHAPES + oldFileId + ".json"),
+                        Paths.get(UPLOAD_MAPSHAPES + newFileUuid + ".json"));
+                clonedShape.setFileId(newFileUuid);
+            }
+
+            // Set the new properties
+            clonedShape.setProjectId(clonedProjectId);
+            clonedShape.setEmail(requestEmail);
+            clonedShape.setYearInTimeline(originalShape.getYearInTimeline());
+            clonedShape.setCreatedAt(Instant.now());
+            clonedShape.setUpdatedAt(Instant.now());
+
+            // Save the new MapShape to the database
+            mapRepostory.save(clonedShape);
+        }
+    }
 
 
 }

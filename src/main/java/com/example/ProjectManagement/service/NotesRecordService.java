@@ -177,6 +177,7 @@ public class NotesRecordService {
                     note.getNoteTitle(),
                     note.getLatitude(),
                     note.getLongitude(),
+                    note.getBackgroundColor(),
                     note.getYearInTimeline(),
                     noteContent,
                     note.getCreatedAt(),

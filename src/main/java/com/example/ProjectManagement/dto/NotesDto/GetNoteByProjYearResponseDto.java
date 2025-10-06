@@ -18,6 +18,7 @@ public class GetNoteByProjYearResponseDto {
     private  String  noteTitle;
     private double latitude;
     private double longitude;
+    private String  backgroundColor;
     private HistoricalYear yearInTimeline;
     private String noteContent;
     private Instant createdAt;

@@ -11,7 +11,7 @@ import java.time.Instant;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class GetNoteByProjYearResponseDto {
+public class GetNoteByProjIdOrProjIdAndYearResponseDto {
 
     private String noteId;
     private String projectId;

@@ -51,6 +51,22 @@ public class HyperlinkRecordController {
     }
 
 
+    //Get All Hyperlinks by Project ID
+    @GetMapping("/get-all-hyperlink-by-project-id/{projectId}")
+    public ResponseEntity<GetHyperlinkResponse> getAllHyperlinksByProjectId(
+            @PathVariable String projectId,
+            @RequestHeader("client_name") String clientName
+    ) {
+        validateClientName(clientName);
+        GetHyperlinkResponse response= hyperlinkRecordService.getAllHyperlinksByProjectId(projectId);
+        if(response.getStatus().equalsIgnoreCase("failure")){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+        return ResponseEntity.ok(response);
+    }
+
+
+
     //Get All Hyperlinks by Project ID and year
     @GetMapping("/get-all-hyperlink-by-project-id-and-year/{projectId}")
     public ResponseEntity<GetHyperlinkResponse> getAllHyperlinksByProjectIdAndYear(

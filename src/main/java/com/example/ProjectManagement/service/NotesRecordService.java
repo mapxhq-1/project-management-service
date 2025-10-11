@@ -133,6 +133,55 @@ public class NotesRecordService {
     }
 
 
+    //Get All Notes by Project ID
+    public GetNoteResponse getAllNotesByProjectId(
+            String projectId
+    ) {
+        if (projectId == null || projectId.isEmpty()) {
+            return new GetNoteResponse("failure", "Invalid or missing projectId", null);
+        }
+        // Fetch from DB
+        List<Notes> notes = notesRepository.findByProjectId(
+                projectId
+        );
+
+        if (notes.isEmpty()) {
+            return new GetNoteResponse("failure", "No notes found", null);
+        }
+
+        List<GetNoteByProjIdOrProjIdAndYearResponseDto> noteDtos=new ArrayList<>();
+        for(Notes note:notes){
+            // Read HTML content
+            String noteContent;
+            try {
+                File file = new File(HTML_NOTES_DIR+ note.getHtmlFileId() + ".html");
+                if (!file.exists()) {
+                    return new GetNoteResponse("failure", "Failed to read note content from disk", null);
+                }
+                noteContent = Files.readString(file.toPath());
+            } catch (Exception e) {
+                return new GetNoteResponse("failure", "Failed to read note content from disk", null);
+            }
+            GetNoteByProjIdOrProjIdAndYearResponseDto dto=new GetNoteByProjIdOrProjIdAndYearResponseDto(
+                    note.getId(),
+                    note.getProjectId(),
+                    note.getNoteTitle(),
+                    note.getLatitude(),
+                    note.getLongitude(),
+                    note.getBackgroundColor(),
+                    note.getYearInTimeline(),
+                    noteContent,
+                    note.getCreatedAt(),
+                    note.getUpdatedAt()
+            );
+            noteDtos.add(dto);
+
+        }
+        return new GetNoteResponse("success", null, noteDtos);
+    }
+
+
+
 
     //Get All Notes by Project ID and year
     public GetNoteResponse getAllNotesByProjectIdAndYear(
@@ -158,7 +207,7 @@ public class NotesRecordService {
             return new GetNoteResponse("failure", "No notes found", null);
         }
 
-        List<GetNoteByProjYearResponseDto> noteDtos=new ArrayList<>();
+        List<GetNoteByProjIdOrProjIdAndYearResponseDto> noteDtos=new ArrayList<>();
         for(Notes note:notes){
             // Read HTML content
             String noteContent;
@@ -171,7 +220,7 @@ public class NotesRecordService {
             } catch (Exception e) {
                 return new GetNoteResponse("failure", "Failed to read note content from disk", null);
             }
-            GetNoteByProjYearResponseDto dto=new GetNoteByProjYearResponseDto(
+            GetNoteByProjIdOrProjIdAndYearResponseDto dto=new GetNoteByProjIdOrProjIdAndYearResponseDto(
                     note.getId(),
                     note.getProjectId(),
                     note.getNoteTitle(),

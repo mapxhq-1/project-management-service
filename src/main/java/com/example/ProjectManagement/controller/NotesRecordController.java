@@ -63,6 +63,24 @@ public class NotesRecordController {
         return ResponseEntity.ok(response);
     }
 
+
+    //Get All Notes by Project ID
+    @GetMapping("/get-all-note-by-project-id/{projectId}")
+    public ResponseEntity<GetNoteResponse>  getAllNotesByProjectId(
+            @PathVariable String projectId,
+            @RequestHeader("client_name") String clientName
+
+    ) {
+        validateClientName(clientName);
+        GetNoteResponse response= notesRecordService.getAllNotesByProjectId(projectId);
+        if ("failure".equalsIgnoreCase(response.getStatus())) {
+            return ResponseEntity.badRequest().body(response);
+        }
+        return ResponseEntity.ok(response);
+    }
+
+
+
     //Get All Notes by Project ID and year
     @GetMapping("/get-all-note-by-project-id-and-year/{projectId}")
     public ResponseEntity<GetNoteResponse>  getAllNotesByProjectAndYear(

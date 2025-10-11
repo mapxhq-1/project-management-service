@@ -98,6 +98,52 @@ public class HyperlinkRecordService {
         return new GetHyperlinkResponse("success", null, hyperlinkDtos);
     }
 
+    //Get All Hyperlinks by Project ID
+
+    public GetHyperlinkResponse getAllHyperlinksByProjectId(
+            String projectId
+    ){
+        if (projectId == null || projectId.isEmpty() || !ObjectId.isValid(projectId)) {
+            return new GetHyperlinkResponse("failure", "Missing or invalid projectId", null);
+        }
+        // Check if project exists
+        Optional<Project> project = projectRepository.findById(projectId);
+        if (project.isEmpty()) {
+            return new GetHyperlinkResponse("failure", "Project not found", null);
+        }
+
+        // Fetch from DB
+        List<Hyperlink> hyperlinks = hyperlinksRepository.findByProjectId(
+                projectId
+        );
+
+        if (hyperlinks.isEmpty()) {
+            return new GetHyperlinkResponse("failure", "No Hyperlinks found", null);
+        }
+        //Convert to DTO
+        List<GetHyperlinkResponseDto> hyperlinkDtos=hyperlinks.stream()
+                .map(hyperlink ->new GetHyperlinkResponseDto(
+                        hyperlink.getId(),
+                        hyperlink.getProjectId(),
+                        hyperlink.getHyperlinkTitle(),
+                        hyperlink.getLatitude(),
+                        hyperlink.getLongitude(),
+                        hyperlink.getYearInTimeline(),
+                        hyperlink.getHyperlink(),
+                        hyperlink.getCreatedAt(),
+                        hyperlink.getUpdatedAt()
+                ))
+                .toList();
+
+        return new GetHyperlinkResponse("success", null, hyperlinkDtos);
+
+    }
+
+
+
+
+
+
 
     //Get All Hyperlinks by Project ID and year
 

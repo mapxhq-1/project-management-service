@@ -30,40 +30,13 @@ public class BearerTokenFilter extends OncePerRequestFilter {
 
         String requestUri = request.getRequestURI();
 
-        // Skip Auth Service's own check-token API
-        if (requestUri.equals("/auth-service/check-token")) {
+        if (requestUri.equals("/auth-service/check-token"))
+        {
             filterChain.doFilter(request, response);
             return;
         }
-//        if (requestUri.matches("^/project-management-service/get-mapShape-by-id/.*$")) {
-//            filterChain.doFilter(request, response);
-//            return;
-//        }
-//
-//        if (requestUri.matches("^/project-management-service/get-all-map-shapes-by-project-id-and-year/.*$")) {
-//            filterChain.doFilter(request, response);
-//            return;
-//        }
-//
-//        if (requestUri.equals("/project-management-service/create-new-mapShape")) {
-//            filterChain.doFilter(request, response);
-//            return;
-//        }
-//
-//        if (requestUri.matches("^/project-management-service/delete-mapShape/.*$")) {
-//            filterChain.doFilter(request, response);
-//            return;
-//        }
-//
-//        if (requestUri.matches("^/project-management-service/update-mapShapes/.*$")) {
-//            filterChain.doFilter(request, response);
-//            return;
-//        }
-//
-//        if (requestUri.matches("^/project-management-service/get-all-note-by-project-id-and-year/.*$")) {
-//            filterChain.doFilter(request, response);
-//            return;
-//        }
+
+
 
         // ✅ Extract client_name from headers
 

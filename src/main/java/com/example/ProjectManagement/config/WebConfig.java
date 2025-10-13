@@ -1,5 +1,4 @@
 package com.example.ProjectManagement.config;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -14,10 +13,18 @@ public class WebConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // Allow all paths
-                        .allowedOrigins("https://app.mapx.in", "https://api.mapx.in", "https://*.netlify.app", "https://mapx-web.netlify.app", "https://mapdesk.mapx.in", "https://mapx-geo-json-service.netlify.app", "http://localhost") // Allow your frontend
-                        .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-                        .allowedHeaders("*")
-                        .allowCredentials(true);
+                        .allowedOriginPatterns(
+                                "https://app.mapx.in",
+                                "https://api.mapx.in",
+                                "https://*.netlify.app",  // wildcard for all Netlify subdomains
+                                "https://mapx-web.netlify.app",
+                                "https://mapdesk.mapx.in",
+                                "https://mapx-geo-json-service.netlify.app",
+                                "http://localhost"
+                        )
+                        .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS") // include OPTIONS for preflight
+                        .allowedHeaders("*")          // allow Authorization and other headers
+                        .allowCredentials(true);      // enable cookies / credentials
             }
         };
     }

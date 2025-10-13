@@ -1,6 +1,8 @@
 package com.example.ProjectManagement.config;
 
 
+package com.example.ProjectManagement.config;
+
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -9,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 @Component
-@Order(0)  // highest precedence
+@Order(0)
 public class SimpleCORSFilter implements Filter {
 
     @Override
@@ -17,12 +19,19 @@ public class SimpleCORSFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
 
-        response.setHeader("Access-Control-Allow-Origin", "https://mapx-web.netlify.app"); // or dynamically set from allowedOriginPatterns
+        String origin = request.getHeader("Origin");
+        if (origin != null && (
+                origin.equals("https://mapx-web.netlify.app") ||
+                        origin.equals("https://app.mapx.in") ||
+                        origin.endsWith(".netlify.app")
+        )) {
+            response.setHeader("Access-Control-Allow-Origin", origin);
+        }
+
         response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
         response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
         response.setHeader("Access-Control-Allow-Credentials", "true");
 
-        // If it’s a preflight OPTIONS request, return immediately
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             response.setStatus(HttpServletResponse.SC_OK);
             return;
@@ -31,3 +40,4 @@ public class SimpleCORSFilter implements Filter {
         chain.doFilter(req, res);
     }
 }
+

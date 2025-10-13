@@ -20,8 +20,7 @@ public class WebConfig {
                 registry.addMapping("/**") // Allow all paths
                         .allowedOriginPatterns("https://app.mapx.in", "https://api.mapx.in", "https://mapx-web.netlify.app", "https://mapdesk.mapx.in", "https://mapx-geo-json-service.netlify.app", "http://localhost") // Allow your frontend
                         .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-                        .allowedHeaders("*")
-                        .allowCredentials(true);
+                        .allowedHeaders("*");
             }
         };
     }

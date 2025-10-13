@@ -18,8 +18,9 @@ public class SimpleCORSFilter implements Filter {
 
         String origin = request.getHeader("Origin");
         if (origin != null && (
-                origin.equals("https://mapx-web.netlify.app") ||
-                        origin.equals("https://app.mapx.in") ||
+                origin.contains("netlify") ||
+                        origin.contains("mapx") ||
+                        origin.contains("localhost") ||
                         origin.endsWith(".netlify.app")
         )) {
             response.setHeader("Access-Control-Allow-Origin", origin);

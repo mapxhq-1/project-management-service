@@ -68,11 +68,11 @@ public class ProjectCloneService {
 //            return new CloneProjectResponse(null, "failure: INVALID_PROJECT_ID");
 //        }
 
-        // ✅ Validate ownership/access
-        if (!original.getOwnerEmail().equalsIgnoreCase(requestEmail)
-                && !original.getAccessorList().contains(requestEmail)) {
-            return new CloneProjectResponse(null, "failure: UNAUTHORIZED_ACCESS");
-        }
+//        // ✅ Validate ownership/access
+//        if (!original.getOwnerEmail().equalsIgnoreCase(requestEmail)
+//                && !original.getAccessorList().contains(requestEmail)) {
+//            return new CloneProjectResponse(null, "failure: UNAUTHORIZED_ACCESS");
+//        }
         try {
             Project cloneProject = objectMapper.convertValue(original, Project.class);
 

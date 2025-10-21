@@ -24,7 +24,6 @@ public class ProjectRecordController {
     private void validateClientName(String clientName) {
         if (!"mapx".equalsIgnoreCase(clientName)) {
                 throw new IllegalArgumentException("Invalid client_name. Expected 'mapx'.");
-
         }
     }
 

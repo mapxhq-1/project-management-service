@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/project-management-service")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
-
 public class MapShapesController {
     @Autowired
     private MapShapesService mapService;

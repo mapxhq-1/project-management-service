@@ -1,4 +1,4 @@
-package com.example.ProjectManagement.controller;
+package com.example.ProjectManagement.Exception;
 
 import com.example.ProjectManagement.Exception.InvalidProjectIdException;
 import com.example.ProjectManagement.dto.GlobalDto.FlowStartResponseModel;

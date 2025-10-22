@@ -8,4 +8,5 @@ import lombok.Data;
 public class UpdateNoteRequest {
     private String  htmlText;                // Required
     private HistoricalYear yearInTimeline;  // Required
+    private String  backgroundColor;
 }

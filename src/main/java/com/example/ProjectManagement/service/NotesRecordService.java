@@ -342,6 +342,7 @@ public class NotesRecordService {
         // Update MongoDB record
         try {
             note.setYearInTimeline(updateRequest.getYearInTimeline());
+            note.setBackgroundColor(updateRequest.getBackgroundColor());
             note.setUpdatedAt(Instant.now());
             notesRepository.save(note);
         } catch (Exception e) {

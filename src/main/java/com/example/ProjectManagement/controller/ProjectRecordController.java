@@ -73,6 +73,35 @@ public class ProjectRecordController {
                 return ResponseEntity.ok(response); // 200
         }
     }
+
+    //APi to update the accessor list
+    @PatchMapping("/update-accessor_list/{projectId}")
+    public  ResponseEntity<StatusResponse> updateAccessorList(
+            @RequestHeader("client_name") String clientName,
+            @RequestParam("email") String userEmail,
+            @PathVariable("projectId") String projectId
+    ){
+        validateClientName(clientName);
+        StatusResponse response = projectRecordService.updateAccessorList(userEmail,projectId);
+        if (response.getMessage()==null){
+            return ResponseEntity.ok(response);
+        }
+        switch (response.getMessage()) {
+
+            case "Project not found":
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response); // 404
+
+            case "Invalid or missing userEmail":
+            case "Invalid or missing projectId":
+            case "useremail is already in accessor list":
+            case "owner email and user email is same":
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response); // 400
+            default:
+                return ResponseEntity.ok(response); // 200
+        }
+    }
+
+
      @GetMapping("/get-all-projects-of-owner")
     public ResponseEntity<GetResponse<List<Project>>> getAllProjectsOfOwner(
             @RequestParam String ownerEmail,

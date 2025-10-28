@@ -1,5 +1,6 @@
 package com.example.ProjectManagement.service;
 
+import com.example.ProjectManagement.dto.NotesDto.GetNoteResponse;
 import com.example.ProjectManagement.dto.projectDto.DeleteProjectResponse;
 import com.example.ProjectManagement.dto.projectDto.GetResponse;
 import com.example.ProjectManagement.dto.projectDto.ProjectRequest;
@@ -127,6 +128,46 @@ public class ProjectRecordService {
 
         return new StatusResponse("success", null, saved.getId());
     }
+
+
+    //Patch Mapping api to update accessor list
+    public StatusResponse updateAccessorList(
+            String userEmail,
+            String projectId
+//            String accessorEmail
+    ){
+        // Validate required fields
+        if (projectId == null || projectId.isEmpty()) {
+            return new StatusResponse("failure", "Invalid or missing projectId", null);
+        }
+        if (userEmail == null || userEmail.isEmpty()) {
+            return new StatusResponse("failure", "Invalid or missing userEmail", null);
+        }
+        Optional<Project> optionalProject = repository.findById(projectId);
+        if (optionalProject.isEmpty()) {
+            return new StatusResponse("failure", "Project not found", null);
+        }
+        Project project = optionalProject.get();
+        if(project.getOwnerEmail().equalsIgnoreCase(userEmail)){
+            return new StatusResponse("failure","owner email and user email is same",null);
+        }
+        List<String> accesorList=project.getAccessorList();
+        for(String accessor:accesorList){
+              if(accessor.equalsIgnoreCase(userEmail)){
+                  return new StatusResponse("failure","useremail is already in accessor list",null);
+              }
+        }
+        accesorList.add(userEmail);
+        project.setAccessorList(accesorList);
+        project.setUpdatedAt(Instant.now());
+
+        // Save updated project
+        Project saved = repository.save(project);
+        return new StatusResponse("success", null, saved.getId());
+    }
+
+
+
 
     // 1. Get All Projects Owned by a User
     public ResponseEntity<GetResponse<List<Project>>> getAllProjectsOfOwner(String ownerEmail) {

@@ -1,7 +1,6 @@
 package com.example.ProjectManagement.service;
 
 import com.example.ProjectManagement.dto.MapShapesDto.*;
-
 import com.example.ProjectManagement.model.HistoricalYear;
 import com.example.ProjectManagement.model.MapShapes;
 import com.example.ProjectManagement.model.Project;
@@ -17,6 +16,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
+import java.nio.file.Files; // Import for fast reading
+import java.nio.file.Path;  // Import for paths
 import java.time.Instant;
 import java.util.*;
 
@@ -53,16 +54,15 @@ public class MapShapesService {
         if (mapShapes == null) {
             return new GetMapShapesResponse("failure", "mapShapes not found", null);
         }
-        TreeMap<String, Object> geojsonContent = new TreeMap<>();
-        ObjectMapper mapper = new ObjectMapper();
-
-        try (InputStream is = new FileInputStream(new File(UPLOAD_DIR + mapShapes.getFileId() + ".json"))) {
-            geojsonContent = mapper.readValue(is, new TypeReference<TreeMap<String, Object>>() {});
+        String geojsonContent = "{}";
+        try {
+            // FAST READ: Read file as String directly
+            String filePath = UPLOAD_DIR + mapShapes.getFileId() + ".json";
+            geojsonContent = Files.readString(Path.of(filePath));
         } catch (Exception e) {
             return new GetMapShapesResponse("failure", "Failed to read geojson content from disk", null);
         }
 
-        // Prepare DTO
         MapShapesResponseDto dto = new MapShapesResponseDto(
                 mapShapes.getId(),
                 mapShapes.getProjectId(),
@@ -70,7 +70,7 @@ public class MapShapesService {
                 mapShapes.getEmail(),
                 mapShapes.getCreatedAt(),
                 mapShapes.getUpdatedAt(),
-                geojsonContent
+                geojsonContent // Pass raw string
         );
 
         return new GetMapShapesResponse("success", null, dto);
@@ -104,11 +104,11 @@ public class MapShapesService {
         List<MapShapesResponseDto> mapShapesDtos=new ArrayList<>();
         for(MapShapes mapShape:mapShapes){
             // Read HTML content
-            TreeMap<String, Object> geojsonContent = new TreeMap<>();
-            ObjectMapper mapper = new ObjectMapper();
-
-            try (InputStream is = new FileInputStream(new File(UPLOAD_DIR + mapShape.getFileId() + ".json"))) {
-                geojsonContent = mapper.readValue(is, new TypeReference<TreeMap<String, Object>>() {});
+            String geojsonContent = "{}";
+            try {
+                // FAST READ: Read file as String directly
+                String filePath = UPLOAD_DIR + mapShape.getFileId() + ".json";
+                geojsonContent = Files.readString(Path.of(filePath));
             } catch (Exception e) {
                 return new GetMapShapesResponse("failure", "Failed to read geojson content from disk", null);
             }
@@ -119,7 +119,7 @@ public class MapShapesService {
                     mapShape.getEmail(),
                     mapShape.getCreatedAt(),
                     mapShape.getUpdatedAt(),
-                    geojsonContent
+                    geojsonContent // Pass raw string
                     );
             mapShapesDtos.add(dto);
 
@@ -128,24 +128,6 @@ public class MapShapesService {
 
         return new GetMapShapesResponse("success", null, mapShapesDtos);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

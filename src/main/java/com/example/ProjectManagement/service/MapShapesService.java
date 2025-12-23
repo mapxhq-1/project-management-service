@@ -34,14 +34,11 @@ public class MapShapesService {
 
     public boolean checkEra(String  era){
         // ✅ Using switch for era check
-        switch (era) {
-            case "BCE": return true;
-            case "CE":return true;
+        return switch (era) {
+            case "BCE", "CE" -> true;
             // valid, do nothing
-            default:
-                break;
-        }
-        return false;
+            default -> false;
+        };
     }
 
     //GET Method to fetch the map shapes details by shapeId
@@ -101,7 +98,7 @@ public class MapShapesService {
         );
 
         if (mapShapes.isEmpty()) {
-            return new GetMapShapesResponse("failure", "No map shapes found", null);
+            return new GetMapShapesResponse("failure", "No map shapes found",new ArrayList<>());
         }
 
         List<MapShapesResponseDto> mapShapesDtos=new ArrayList<>();

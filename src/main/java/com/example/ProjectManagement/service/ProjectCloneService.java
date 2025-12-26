@@ -18,6 +18,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 @Service
 public class ProjectCloneService {
 
@@ -52,10 +56,14 @@ public class ProjectCloneService {
 
     private static final String UPLOAD_MAPSHAPES = System.getProperty("user.dir") + "/src/main/resources/map_shapes_content/";
 
+    // Define a custom thread pool for cloning tasks to prevent blocking the main application threads
+    // Adjust the pool size (e.g., 10) based on your server's capacity
+    private final ExecutorService cloningExecutor = Executors.newFixedThreadPool(10);
     public CloneProjectResponse CloneProject(
           String requestEmail,
           String projectId
     ) {
+        long startTime=System.currentTimeMillis(); //Start Timer
         // ✅ Validate projectId
         if (projectId == null || projectId.isEmpty() || !ObjectId.isValid(projectId)) {
             return new CloneProjectResponse(null, "failure: INVALID_PROJECT_ID");
@@ -64,15 +72,6 @@ public class ProjectCloneService {
         Project original = projectRepository.findById(projectId)
                 .orElseThrow(() -> new InvalidProjectIdException());
 
-//        if (original == null) {
-//            return new CloneProjectResponse(null, "failure: INVALID_PROJECT_ID");
-//        }
-
-//        // ✅ Validate ownership/access
-//        if (!original.getOwnerEmail().equalsIgnoreCase(requestEmail)
-//                && !original.getAccessorList().contains(requestEmail)) {
-//            return new CloneProjectResponse(null, "failure: UNAUTHORIZED_ACCESS");
-//        }
         try {
             Project cloneProject = objectMapper.convertValue(original, Project.class);
 
@@ -84,13 +83,48 @@ public class ProjectCloneService {
             cloneProject = projectRepository.save(cloneProject);
             String clonedProjectId = cloneProject.getId();
             // ✅ Clone associated resources
-            cloneNotes(projectId, clonedProjectId, requestEmail);
-            cloneImages(projectId, clonedProjectId, requestEmail);
-            cloneHyperlinks(projectId, clonedProjectId, requestEmail);
-            cloneMapShapes(projectId, clonedProjectId, requestEmail);
+            // Run Cloning Tasks in Parallel (Asynchronously)
+            //Task A:Clone Notes
+            CompletableFuture<Void> notesFuture=CompletableFuture.runAsync(()->{
+                try {
+                    cloneNotes(projectId, clonedProjectId, requestEmail);
+                }catch (IOException e){
+                    throw  new CompletionException(e);
+                }
+            },cloningExecutor);
+            // Task B: Clone Images
+            CompletableFuture<Void> imagesFuture = CompletableFuture.runAsync(() -> {
+                try {
+                    cloneImages(projectId, clonedProjectId, requestEmail);
+                } catch (IOException e) {
+                    throw new CompletionException(e);
+                }
+            }, cloningExecutor);
+
+            // Task C: Clone Hyperlinks (No IOException usually, but good practice to handle)
+            CompletableFuture<Void> hyperlinksFuture = CompletableFuture.runAsync(() -> {
+                cloneHyperlinks(projectId, clonedProjectId, requestEmail);
+            }, cloningExecutor);
+            // Task D: Clone Map Shapes
+            CompletableFuture<Void> mapShapesFuture = CompletableFuture.runAsync(() -> {
+                try {
+                    cloneMapShapes(projectId, clonedProjectId, requestEmail);
+                } catch (IOException e) {
+                    throw new CompletionException(e);
+                }
+            }, cloningExecutor);
+// 5. Wait for ALL tasks to finish (Non-blocking wait)
+            CompletableFuture.allOf(notesFuture, imagesFuture, hyperlinksFuture, mapShapesFuture).join();
+             long endTIme=System.currentTimeMillis(); //stop timer
+            System.out.println("🚀 Total Cloning Time: " + (endTIme - startTime) + "ms");
             return new CloneProjectResponse(clonedProjectId, "success");
-        }catch (IOException e) {
-            return new CloneProjectResponse(null, "failure: FILE_COPY_ERROR");
+        }catch (CompletionException e) {
+            // Unwrap the actual cause (e.g., IOException)
+            Throwable cause = e.getCause();
+            if (cause instanceof IOException) {
+                return new CloneProjectResponse(null, "failure: FILE_COPY_ERROR");
+            }
+            return new CloneProjectResponse(null, "failure: INTERNAL_ERROR - " + cause.getMessage());
         } catch (Exception e) {
             return new CloneProjectResponse(null, "failure: INTERNAL_ERROR");
         }
